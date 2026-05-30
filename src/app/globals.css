@@ -1,0 +1,421 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   CSS Custom Properties — Dark (default) palette
+   The site starts dark; the hero scroll transition
+   adds .purple-active to flip everything to #8b5cf6.
+   ============================================ */
+:root {
+  --bg-primary: #000000;
+  --bg-secondary: #0f172a;
+  --bg-card: #111827;
+  --bg-card-hover: #1e293b;
+  --border-color: #1e293b;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent-teal: #a78bfa;
+  --accent-blue: #7c3aed;
+  --accent-purple: #8b5cf6;
+  --glow-color: rgba(139, 92, 246, 0.15);
+  --glow-strong: rgba(139, 92, 246, 0.35);
+  --glass-bg: rgba(15, 23, 42, 0.6);
+  --glass-border: rgba(30, 41, 59, 0.8);
+  --particle-color: #a78bfa;
+  --grid-color: rgba(139, 92, 246, 0.025);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 20px rgba(0,0,0,0.4);
+  --shadow-lg: 0 10px 40px rgba(0,0,0,0.5);
+}
+
+/* ============================================
+   Base Styles
+   ============================================ */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: auto; /* Lenis handles smooth scroll */
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  transition: background-color 0.5s ease, color 0.5s ease;
+  overflow-x: hidden;
+}
+
+/* Custom selection color */
+::selection {
+  background: var(--accent-teal);
+  color: #fff;
+}
+
+/* ============================================
+   Hide Scrollbar Utility (keep scrollable)
+   ============================================ */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ============================================
+   Custom Scrollbar
+   ============================================ */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-teal);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-blue);
+}
+
+/* ============================================
+   Grid Background Pattern
+   ============================================ */
+.bg-fintech-grid {
+  background-image:
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* ============================================
+   Glass Morphism Utilities
+   ============================================ */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-strong {
+  background: var(--glass-bg);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid var(--glass-border);
+}
+
+/* ============================================
+   Glow Effects
+   ============================================ */
+.glow-teal {
+  box-shadow: 0 0 20px var(--glow-color), 0 0 60px var(--glow-color);
+}
+
+.glow-teal-strong {
+  box-shadow: 0 0 30px var(--glow-strong), 0 0 80px var(--glow-color);
+}
+
+.text-glow {
+  text-shadow: 0 0 40px var(--glow-color);
+}
+
+/* ============================================
+   Button Styles
+   ============================================ */
+.btn-primary {
+  @apply relative inline-flex items-center justify-center px-8 py-3.5 rounded-xl
+    font-semibold text-sm tracking-wide overflow-hidden transition-all duration-300;
+  background: linear-gradient(135deg, var(--accent-teal), var(--accent-blue));
+  color: #fff;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 40px var(--glow-strong);
+}
+
+.btn-secondary {
+  @apply relative inline-flex items-center justify-center px-8 py-3.5 rounded-xl
+    font-semibold text-sm tracking-wide transition-all duration-300;
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  border-color: var(--accent-teal);
+  color: var(--accent-teal);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 40px var(--glow-color);
+}
+
+/* ============================================
+   Section Styles
+   ============================================ */
+.section-padding {
+  @apply px-6 md:px-12 lg:px-24 py-24 md:py-32;
+}
+
+.section-title {
+  @apply text-3xl md:text-5xl font-bold mb-4 tracking-tight;
+  color: var(--text-primary);
+}
+
+.section-subtitle {
+  @apply text-base md:text-lg max-w-2xl;
+  color: var(--text-secondary);
+}
+
+/* ============================================
+   Card Styles
+   ============================================ */
+.fintech-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fintech-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent-teal);
+  box-shadow: 0 0 30px var(--glow-color);
+  transform: translateY(-4px);
+}
+
+/* Metallic shine pseudo-element — hidden by default, sweeps on hover */
+.timeline-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    transparent 30%,
+    rgba(255, 255, 255, 0) 30%,
+    rgba(255, 255, 255, 0.45) 50%,
+    rgba(255, 255, 255, 0) 70%,
+    transparent 70%,
+    transparent 100%
+  );
+  transform: translateX(-120%);
+  transition: none;
+  pointer-events: none;
+  z-index: 5;
+  border-radius: inherit;
+}
+
+.timeline-card:hover::after {
+  transform: translateX(120%);
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.timeline-card:hover {
+  background: #ede5ff !important;
+  border-color: #c4b5fd !important;
+  box-shadow: 0 8px 30px rgba(139, 92, 246, 0.12);
+  transform: translateY(-4px);
+}
+
+/* ============================================
+   Terminal Style
+   ============================================ */
+.terminal {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  font-family: var(--font-mono), monospace;
+  overflow: hidden;
+}
+
+.terminal-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.terminal-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.terminal-input {
+  @apply w-full bg-transparent border-none outline-none text-sm py-3 px-4;
+  color: var(--text-primary);
+  font-family: var(--font-mono), monospace;
+}
+
+.terminal-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* ============================================
+   Animated Number Counter
+   ============================================ */
+.counter-value {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================
+   Noise / Grain Overlay
+   ============================================ */
+.noise-overlay::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.015;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  z-index: 9999;
+}
+
+/* ============================================
+   Hero backdrop — opaque vignette behind the WebGL layer (z-0), not an overlay on top.
+   ============================================ */
+.hero-atmosphere {
+  pointer-events: none;
+  /* Opaque stops only — a real lighter charcoal at center, not alpha over black */
+  background: radial-gradient(
+    ellipse 105% 100% at 50% 46%,
+    #1a1f2a 0%,
+    #14181f 22%,
+    #0e1014 45%,
+    #060708 68%,
+    #000000 100%
+  );
+}
+
+/* ============================================
+   Responsive Typography Scale
+   ============================================ */
+.heading-hero {
+  @apply text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] tracking-tight;
+  /* Two stacked drop-shadows: a tight close shadow grounds the glyphs and
+     a softer wider one casts a halo beneath. `filter: drop-shadow` rather
+     than `text-shadow` because the headline uses `background-clip: text`,
+     and drop-shadow correctly traces the rendered glyph outline. */
+  filter:
+    drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45))
+    drop-shadow(0 14px 28px rgba(0, 0, 0, 0.55));
+}
+
+.heading-section {
+  @apply text-3xl md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight;
+}
+
+/* ============================================
+   Utility Animations
+   ============================================ */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes borderGlow {
+  0%, 100% {
+    border-color: var(--border-color);
+  }
+  50% {
+    border-color: var(--accent-teal);
+  }
+}
+
+/* ============================================
+   Purple Active — toggled on <html> after the
+   hero zoom transition. Background becomes
+   exactly #8b5cf6 (the purple dot colour).
+   ============================================ */
+.purple-active {
+  --bg-primary: #8b5cf6;
+  --bg-secondary: #7c3aed;
+  --bg-card: #7c3aed;
+  --bg-card-hover: #6d28d9;
+  --border-color: #a78bfa;
+  --text-primary: #ffffff;
+  --text-secondary: #ede9fe;
+  --text-muted: #c4b5fd;
+  --accent-teal: #4c1d95;
+  --accent-blue: #5b21b6;
+  --accent-purple: #6d28d9;
+  --glow-color: rgba(255, 255, 255, 0.15);
+  --glow-strong: rgba(255, 255, 255, 0.3);
+  --glass-bg: rgba(124, 58, 237, 0.5);
+  --glass-border: rgba(167, 139, 250, 0.6);
+  --particle-color: #c4b5fd;
+  --grid-color: rgba(255, 255, 255, 0.05);
+  --shadow-sm: 0 1px 3px rgba(80, 20, 160, 0.3);
+  --shadow-md: 0 4px 20px rgba(80, 20, 160, 0.35);
+  --shadow-lg: 0 10px 40px rgba(80, 20, 160, 0.4);
+}
+
+/* ============================================
+   White Active — toggled after the purple-to-white
+   transition, for Work and all subsequent sections.
+   ============================================ */
+.white-active {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-card: #f5f0ff;
+  --bg-card-hover: #ede5ff;
+  --border-color: #e9d5ff;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --accent-teal: #7c3aed;
+  --accent-blue: #8b5cf6;
+  --accent-purple: #8b5cf6;
+  --glow-color: rgba(139, 92, 246, 0.1);
+  --glow-strong: rgba(139, 92, 246, 0.2);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(226, 232, 240, 0.8);
+  --particle-color: #8b5cf6;
+  --grid-color: rgba(139, 92, 246, 0.04);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
