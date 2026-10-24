@@ -4,355 +4,252 @@
  * To add a new language, duplicate this file (e.g. `fr.js`), translate every
  * value, then register it in `../TranslationProvider.jsx`.
  *
- * Keys are grouped by component / section so translators can work through the
- * site top-to-bottom. Arrays must keep the same length and order as the
- * original — components merge them with non-translatable config (colours,
- * positions, etc.) by index.
+ * Keys are grouped by section, top to bottom. Arrays must keep the same
+ * length and order as the original — components merge them with
+ * non-translatable config (artwork seeds etc.) by index.
+ *
+ * PLACEHOLDER CONTENT: client names, projects, results, people, quotes and
+ * awards are fictional stand-ins. Replace every one with real material
+ * before launch.
  */
 const en = {
-  /* ── Site metadata (used in layout.jsx — server component) ── */
-  meta: {
-    title: 'Portfolio — UI/UX Designer, Software Developer & Product Builder',
-    description:
-      'Pixel perfect digital experiences that demand attention, engage users, and drive real results.',
-  },
-
   /* ── Navbar ── */
   nav: {
-    home: 'Home',
-    systems: 'Systems',
     work: 'Work',
-    caseStudies: 'Case Studies',
-    skills: 'Skills',
-    about: 'About',
-    logo: 'FX',
-    brand: 'FinPort',
+    services: 'Services',
+    process: 'Process',
+    studio: 'Studio',
+    logo: 'CP',
+    brand: 'Cyber Pears',
     toggleMenu: 'Toggle menu',
-    bookCall: 'Book a Call',
+    bookCall: 'Start a project',
   },
 
-  /* ── Book-a-Call CTA button ── */
+  /* ── Brand theme switch ── */
+  brandSwitch: {
+    label: 'Colour theme',
+    violet: 'Violet',
+    noir: 'Noir',
+  },
+
+  /* ── Primary CTA button ── */
   bookCallButton: {
-    label: 'Book a Call',
+    label: 'Start a project',
   },
 
-  /* ── Loader ── */
-  loader: {
-    logo: 'FX',
-    brand: 'FinPort',
-    initializing: 'Initializing systems...',
-    loading: 'Loading financial modules...',
-    connecting: 'Connecting networks...',
-    online: 'Systems online',
+  /* ── Preloader ── */
+  preloader: {
+    wordmark: 'Cyber Pears',
+    tagline: 'Design & Development Studio',
+    loading: 'Loading',
   },
 
-  /* ── Smooth Letters Intro ── */
-  intro: {
-    greeting: 'Hey!',
-    scrollLabel: 'Scroll',
-    sentence:
-      "I won't waste your time with bullshit. Let's cut to the chase, and start building!",
+  /* ── Scroll progress rail (keyed by section id) ── */
+  progress: {
+    manifesto: 'Studio',
+    services: 'Services',
+    work: 'Work',
+    cases: 'Case studies',
+    process: 'Process',
+    clients: 'Clients',
+    studio: 'About',
+    testimonials: 'Kind words',
+    contact: 'Contact',
   },
 
   /* ── Hero ── */
   hero: {
-    badge: '10+ founders booked a call this week.',
-    headline: "WEBSITES THAT TELL YOUR STORY.",
-    accentWords: [''],
+    badge: 'Now booking projects for early 2027',
+    // "\n" marks a line break
+    headline: 'Websites that tell\nyour story.',
+    // Set in italic, in the accent colour (must match a word exactly, incl. punctuation)
+    accentWords: ['your', 'story.'],
     subtext:
-      'Dive into a world of endless possibilities.',
+      'Cyber Pears designs and builds digital flagships for brands that refuse to be ordinary.',
     scrollLabel: 'Scroll',
   },
 
-  /* ── Fintech Systems ── */
-  fintechSystems: {
-    sectionLabel: 'Ecosystem',
-    heading: 'Interactive Fintech ',
-    headingAccent: 'Architecture',
-    description:
-      'A complete view of the financial systems designed — from bank integrations to consumer-facing applications.',
-    challengesTitle: 'UX Challenges Solved',
-    nodes: [
+  /* ── Manifesto ── */
+  manifesto: {
+    label: 'The studio',
+    statement:
+      'We are a small studio for ambitious brands. We design with restraint, engineer with care, and obsess over the moments in between — the transitions, the timing, the feel.',
+  },
+
+  /* ── Services ── */
+  services: {
+    label: 'What we do',
+    heading: 'Three disciplines, one standard',
+    items: [
       {
-        label: 'Banks',
-        description:
-          'Multi-bank integration with 500+ financial institutions via secure APIs.',
-        challenges:
-          'Handling diverse data formats, ensuring 99.99% uptime, real-time balance sync.',
+        title: 'Brand Identity',
+        description: 'Naming, visual identity and the systems that keep a brand unmistakable.',
+        tags: ['Strategy', 'Identity', 'Guidelines'],
       },
       {
-        label: 'Aggregator',
-        description:
-          'Unified data pipeline aggregating accounts, transactions, and balances.',
-        challenges:
-          'Data normalization across banks, consent management, PSD2 compliance.',
+        title: 'Digital Design',
+        description: 'Websites and products designed to be felt, not just seen.',
+        tags: ['Web', 'Product', 'Design systems'],
       },
       {
-        label: 'Credit Systems',
-        description:
-          'Credit card data analysis, scoring models, and utilization dashboards.',
-        challenges:
-          'Real-time credit scoring, fraud detection UI, spending pattern visualization.',
-      },
-      {
-        label: 'Investment Platforms',
-        description:
-          'Portfolio management with asset allocation and performance tracking.',
-        challenges:
-          'Real-time market data rendering, complex chart interactions, risk displays.',
-      },
-      {
-        label: 'Stock Brokerage',
-        description:
-          'Trading interfaces with order books, candlestick charts, and execution flows.',
-        challenges:
-          'Sub-second UI updates, order flow visualization, watchlist management.',
-      },
-      {
-        label: 'User Application',
-        description:
-          'Consumer-facing app combining all financial services in one unified experience.',
-        challenges:
-          'Onboarding complexity, information hierarchy, accessibility at scale.',
+        title: 'Development',
+        description: 'Fast, accessible, maintainable builds — engineered to last.',
+        tags: ['Next.js', 'Headless CMS', 'E-commerce'],
       },
     ],
   },
 
-  /* ── Experience Timeline ── */
-  experienceTimeline: {
-    sectionLabel: 'Experience',
-    heading: 'Building Tech ',
-    headingHighlight: 'Since 2019',
-    description:
-      'Scroll horizontally through five years of designing financial systems that handle billions in transactions.',
-    prevCard: 'Previous card',
-    nextCard: 'Next card',
-    goToCard: 'Go to card',
-    cards: [
-      {
-        year: '2019–2020',
-        title: 'Bank Aggregator Systems',
-        company: 'NexBank Financial',
-        description:
-          'Designed unified banking dashboards aggregating data from 500+ institutions. Built real-time balance sync interfaces and consent management flows.',
-        metrics: ['500+ Banks', '2M+ Users', '99.9% Uptime'],
-        tags: ['Open Banking', 'PSD2', 'API Design'],
-      },
-      {
-        year: '2020–2021',
-        title: 'Credit Card Data Platforms',
-        company: 'CreditPulse Analytics',
-        description:
-          'Created credit monitoring dashboards with real-time scoring, spending pattern visualizations, and fraud alert interfaces.',
-        metrics: ['50M+ Transactions', '98% Accuracy', '3s Load Time'],
-        tags: ['Credit Scoring', 'Fraud Detection', 'Data Viz'],
-      },
-      {
-        year: '2021–2022',
-        title: 'Investment Portfolio Dashboards',
-        company: 'InvestFlow Capital',
-        description:
-          'Built portfolio management interfaces with asset allocation views, performance tracking, and risk assessment tools.',
-        metrics: ['$2B+ AUM', '15K Portfolios', '4.8★ Rating'],
-        tags: ['Portfolio Mgmt', 'Risk Analysis', 'Charts'],
-      },
-      {
-        year: '2022–2023',
-        title: 'Financial Management Platform',
-        company: 'WealthOS Systems',
-        description:
-          'Designed an enterprise FMP handling budgeting, forecasting, and multi-entity financial reporting for mid-market companies.',
-        metrics: ['200+ Enterprises', '$500M Managed', '40% Efficiency ↑'],
-        tags: ['Enterprise', 'Budgeting', 'Reporting'],
-      },
-      {
-        year: '2023–2024',
-        title: 'Stock Trading Applications',
-        company: 'TradeAxis Markets',
-        description:
-          'Designed high-frequency trading interfaces with real-time order books, candlestick charts, and one-tap execution flows.',
-        metrics: ['1M+ Trades/Day', '<100ms Latency', '25% ↑ Conversion'],
-        tags: ['Trading UI', 'Real-time', 'Order Flow'],
-      },
+  /* ── Selected Work (horizontal carousel) ── */
+  selectedWork: {
+    label: 'Selected work',
+    heading: 'Recent flagships',
+    description: 'A few of the brands we have helped launch, rebuild and reimagine.',
+    viewProject: 'View project',
+    prev: 'Previous project',
+    next: 'Next project',
+    goTo: 'Go to project',
+    projects: [
+      { client: 'Maison Verre', title: 'A glasshouse brand, rebuilt in light', year: '2026', services: ['Identity', 'Web'] },
+      { client: 'Nordlicht', title: 'E-commerce for a Nordic outerwear label', year: '2026', services: ['Design', 'Development'] },
+      { client: 'Atelier Sol', title: 'Portfolio site for an architecture practice', year: '2025', services: ['Web', 'Motion'] },
+      { client: 'Hollow & Pine', title: 'Launch campaign for a small-batch distillery', year: '2025', services: ['Identity', 'Motion'] },
+      { client: 'Kinoko Labs', title: 'Product marketing site with live 3D', year: '2025', services: ['Design', 'WebGL'] },
     ],
   },
 
-  /* ── Case Studies ── */
+  /* ── Featured case studies (stacked panels) ── */
   caseStudies: {
-    sectionLabel: 'Case Studies',
-    heading: 'Products That Move ',
-    headingAccent: 'Real Money',
-    description:
-      'Each project is a mini product reveal — designed to handle millions of financial data points with precision.',
+    label: 'Case studies',
+    heading: 'Work, in depth',
     cases: [
       {
-        title: 'NexBank Aggregator',
-        category: 'Bank Aggregation Platform',
+        client: 'Maison Verre',
+        category: 'Identity · Web · Motion',
+        title: 'Turning a 90-year-old glassworks into a modern luxury house',
         description:
-          'Designed a unified banking experience connecting 500+ financial institutions. Built real-time account sync, transaction categorization, and multi-bank balance views.',
+          'A new identity, a cinematic e-commerce flagship and a motion language built around the way light moves through glass.',
         stats: [
-          { label: 'Institutions', value: 500, suffix: '+' },
-          { label: 'Active Users', value: 2.4, suffix: 'M' },
-          { label: 'Sync Speed', value: 1.2, suffix: 's' },
+          { value: 3.2, suffix: '×', label: 'Online revenue' },
+          { value: 48, suffix: '%', label: 'Longer sessions' },
+          { value: 1.1, suffix: 's', label: 'Load time' },
         ],
       },
       {
-        title: 'CreditPulse Analytics',
-        category: 'Credit Data System',
+        client: 'Nordlicht',
+        category: 'Design · Development',
+        title: 'A storefront as calm and capable as the jackets it sells',
         description:
-          'Created an intelligent credit monitoring platform with real-time scoring, spending insights, and fraud detection interfaces that process 50M+ transactions monthly.',
+          'Headless commerce with a product story told through scroll — from fabric to fjord — without slowing the path to checkout.',
         stats: [
-          { label: 'Transactions', value: 50, suffix: 'M+/mo' },
-          { label: 'Detection Rate', value: 98.7, suffix: '%' },
-          { label: 'Avg Response', value: 200, suffix: 'ms' },
+          { value: 62, suffix: '%', label: 'Conversion lift' },
+          { value: 99, suffix: '', label: 'Lighthouse score' },
+          { value: 14, suffix: '', label: 'Markets at launch' },
         ],
       },
       {
-        title: 'InvestFlow Dashboard',
-        category: 'Investment Platform',
+        client: 'Kinoko Labs',
+        category: 'Design · WebGL',
+        title: 'Explaining an invisible product with a world you can touch',
         description:
-          'Built a portfolio management interface tracking $2B+ in assets. Features include real-time P&L, asset allocation charts, and predictive risk scoring.',
+          'A real-time 3D product tour that turns a complex platform into something visitors can explore at their own pace.',
         stats: [
-          { label: 'AUM', value: 2.1, suffix: 'B' },
-          { label: 'Portfolios', value: 15, suffix: 'K+' },
-          { label: 'App Rating', value: 4.8, suffix: '★' },
-        ],
-      },
-      {
-        title: 'TradeAxis Platform',
-        category: 'Stock Broking Application',
-        description:
-          'Designed a high-performance trading interface supporting 1M+ daily trades. Real-time candlesticks, depth charts, and one-tap order execution.',
-        stats: [
-          { label: 'Daily Trades', value: 1, suffix: 'M+' },
-          { label: 'Latency', value: 80, suffix: 'ms' },
-          { label: 'Conversion', value: 25, suffix: '% ↑' },
+          { value: 2.4, suffix: '×', label: 'Demo requests' },
+          { value: 3, suffix: 'm', label: 'Avg. time on page' },
+          { value: 60, suffix: 'fps', label: 'On mid-range phones' },
         ],
       },
     ],
   },
 
-  /* ── Data Playground ── */
-  dataPlayground: {
-    sectionLabel: 'Interactive Data',
-    heading: 'Data Visualization ',
-    headingAccent: 'Playground',
-    description:
-      'Explore interactive fintech data visualizations — the building blocks of every financial interface designed.',
-    portfolioTitle: 'Portfolio Allocation',
-    creditTitle: 'Credit Monitor',
-    creditUtilization: 'Credit Utilization',
-    creditHealthy: 'Healthy',
-    creditUsed: '$4,250 used',
-    creditLimit: '$12,500 limit',
-    transactionsTitle: 'Live Transaction Stream',
-    cardBrands: ['Visa', 'MC'],
-    allocationLabels: ['Equities', 'Fixed Income', 'Real Estate', 'Crypto', 'Cash'],
-    transactions: [
-      { desc: 'Salary Deposit', amount: '+$8,450.00', time: '2s ago' },
-      { desc: 'AWS Services', amount: '-$1,234.56', time: '5s ago' },
-      { desc: 'Invoice #1847', amount: '+$3,200.00', time: '12s ago' },
-      { desc: 'Stripe Fee', amount: '-$89.32', time: '18s ago' },
-      { desc: 'Client Payment', amount: '+$5,670.00', time: '24s ago' },
-      { desc: 'Office Rent', amount: '-$2,500.00', time: '31s ago' },
+  /* ── Process ── */
+  process: {
+    label: 'How we work',
+    heading: 'A process built for craft',
+    steps: [
+      { title: 'Discover', description: 'We learn the business, the audience and what success looks like.' },
+      { title: 'Design', description: 'Direction first, then every screen, state and transition.' },
+      { title: 'Build', description: 'Engineered in parallel with design, reviewed weekly with you.' },
+      { title: 'Launch', description: 'Performance, accessibility and a calm, well-rehearsed go-live.' },
     ],
   },
 
-  /* ── Skills ── */
-  skills: {
-    sectionLabel: 'Expertise',
-    heading: 'System ',
-    headingAccent: 'Architecture Map',
-    description:
-      'Hover over each skill node to explore how different areas of expertise connect in building fintech products.',
-    labels: [
-      'UI/UX Design',
-      'Fintech Systems',
-      'API Integrations',
-      'Data Visualization',
-      'Mobile Apps',
-      'Financial Analytics',
-      'Design Systems',
+  /* ── Clients & recognition ── */
+  clients: {
+    label: 'Trusted by',
+    names: ['Maison Verre', 'Nordlicht', 'Atelier Sol', 'Hollow & Pine', 'Kinoko Labs', 'Oro Studio', 'Field & Fable', 'Lumen House'],
+    awardsLabel: 'Recognition',
+    awards: [
+      { name: 'Site of the Day', body: 'Placeholder awards body', year: '2026' },
+      { name: 'Developer Award', body: 'Placeholder awards body', year: '2025' },
+      { name: 'Honourable Mention', body: 'Placeholder awards body', year: '2025' },
     ],
   },
 
-  /* ── About ── */
-  about: {
-    sectionLabel: 'About',
-    heading: 'At the Intersection of ',
-    headingAccent: 'Finance & Design',
+  /* ── Studio ── */
+  studio: {
+    label: 'Studio',
+    heading: 'Small by design',
+    body:
+      'Cyber Pears is a deliberately small team of designers and engineers. Every project is led by the people who do the work — no hand-offs, no account managers in between.',
+    bodySecondary:
+      'We take on a handful of projects each year, so each one gets our full attention from the first workshop to the last line of code.',
     stats: [
-      { value: '5+', label: 'Years in Fintech' },
-      { value: '20+', label: 'Products Shipped' },
-      { value: '$2B+', label: 'Assets Under Design' },
-      { value: '10M+', label: 'Users Impacted' },
+      { value: 7, suffix: '', label: 'Years in practice' },
+      { value: 60, suffix: '+', label: 'Launches' },
+      { value: 12, suffix: '', label: 'People' },
     ],
-    bioP1Start: "I'm a product designer who lives at the crossroads of ",
-    bioHighlights: ['finance', 'technology', 'product design'],
-    bioP2:
-      "Over the past five years, I've designed systems that process millions of financial data points in real time — from bank aggregation platforms connecting 500+ institutions to stock trading interfaces executing millions of daily transactions.",
-    bioP3:
-      'My work focuses on making complex financial systems feel intuitive, secure, and delightful. Every interface I design is built on deep understanding of financial regulations, data architecture, and user psychology.',
-    terminalTitle: 'portfolio_terminal.exe',
-    terminalStatus: '● SYSTEMS ONLINE',
-    terminalLatency: 'LATENCY: 12ms',
-    terminalUptime: 'UPTIME: 99.99%',
-    terminalLines: [
-      { prefix: '→', text: 'Loading financial modules...' },
-      { prefix: '✓', text: 'Bank aggregation service connected' },
-      { prefix: '✓', text: 'Credit data pipeline initialized' },
-      { prefix: '✓', text: 'Investment analytics engine ready' },
-      { prefix: '✓', text: 'Trading interface compiled' },
-      { prefix: '→', text: 'Running design system audit...' },
-      { prefix: 'ℹ', text: '847 components | 62 patterns | 12 themes' },
-      { prefix: '→', text: 'Portfolio ready for review' },
+  },
+
+  /* ── Testimonials ── */
+  testimonials: {
+    label: 'Kind words',
+    prev: 'Previous testimonial',
+    next: 'Next testimonial',
+    goTo: 'Show testimonial',
+    cursorNext: 'Next',
+    items: [
+      { quote: 'Placeholder quote — they treated our brand like it was their own, and it shows in every detail.', name: 'Client name', role: 'Founder, Company' },
+      { quote: 'Placeholder quote — the most considered launch we have ever shipped, and the calmest.', name: 'Client name', role: 'Marketing Director, Company' },
+      { quote: 'Placeholder quote — every interaction moves exactly the way it should. People notice.', name: 'Client name', role: 'Head of Product, Company' },
     ],
   },
 
   /* ── Contact ── */
   contact: {
-    sectionLabel: 'Contact',
-    heading: "Let's Build the Next Generation of ",
-    headingAccent: 'Financial Products',
-    description:
-      "Ready to design fintech systems that move data, money, and decisions? Let's talk.",
-    terminalTitle: 'new_collaboration.sh',
-    successTitle: 'Transmission received.',
-    successMessage: "I'll get back to you within 24 hours.",
+    label: 'Contact',
+    heading: 'Let’s make something rare.',
+    description: 'Tell us about your project. We reply within two working days.',
+    emailLabel: 'Or write to us',
+    email: 'hello@cyberpears.studio',
     fields: {
-      name: { label: 'name', placeholder: 'Enter your name...' },
-      email: { label: 'email', placeholder: 'your@email.com' },
-      company: { label: 'company', placeholder: 'Company or project name...' },
-      message: { label: 'message', placeholder: 'Describe your project...' },
+      name: 'Your name',
+      email: 'Email',
+      company: 'Company (optional)',
+      budget: 'Budget',
+      message: 'Tell us about the project',
     },
-    promptSymbol: '$',
-    submitLoading: 'Transmitting...',
-    submitLabel: 'Send Transmission',
-    availableTag: 'Available for new projects',
-    availableDescription:
-      'Currently accepting fintech design projects, consulting engagements, and full-time opportunities.',
-    connectTitle: 'Connect',
-    channels: [
-      { label: 'Email', value: 'hello@fintechdesigner.com', icon: '✉' },
-      { label: 'LinkedIn', value: '/in/fintechdesigner', icon: '🔗' },
-      { label: 'Dribbble', value: '@fintechdesigner', icon: '🎨' },
-      { label: 'Twitter', value: '@fintechdesigner', icon: '𝕏' },
-    ],
-    responseTimeLabel: 'Avg. Response Time',
-    responseTimeValue: '< 24hrs',
+    budgets: ['Under $25k', '$25k–$75k', '$75k–$150k', '$150k+'],
+    submit: 'Send enquiry',
+    sending: 'Sending…',
+    successTitle: 'Thank you.',
+    successMessage: 'We’ve received your enquiry and will be in touch shortly.',
+    errorMessage: 'Something went wrong sending your message. Please email us directly.',
   },
 
   /* ── Footer ── */
   footer: {
-    logo: 'FX',
-    brand: 'FinPort',
-    status: 'All systems operational',
-    version: 'v2.0.0',
-    home: 'Home',
-    work: 'Work',
-    contact: 'Contact',
-    credits:
-      'Designed & built with precision. Powered by Next.js, Three.js, and GSAP.',
+    tagline: 'Design & development for brands that refuse to be ordinary.',
+    navLabel: 'Studio',
+    socialLabel: 'Elsewhere',
+    // Placeholder profiles — point these at real accounts before launch
+    socials: [
+      { label: 'Instagram', href: '#' },
+      { label: 'LinkedIn', href: '#' },
+      { label: 'Dribbble', href: '#' },
+    ],
+    wordmark: 'Cyber Pears',
+    rights: 'All rights reserved.',
+    backToTop: 'Back to top',
   },
 }
 

@@ -1,13 +1,16 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useRef } from 'react'
 import gsap from 'gsap'
+import { useGSAP } from '@gsap/react'
 import { useTranslation } from '@/i18n'
 
+gsap.registerPlugin(useGSAP)
+
 /**
- * Retro-styled "Book a Call" CTA button with a bottom-left 3D offset shadow.
- * Letters wave every 10 seconds for an eye-catching idle animation.
- * Automatically adapts to dark purple text when the page enters .white-active.
+ * Retro-styled CTA button with a bottom-left 3D offset shadow.
+ * Letters wave every 5 seconds for an eye-catching idle animation.
+ * Colours and hover come from `.btn-retro` (stage/brand tokens).
  *
  * @param {'sm' | 'md'} size  — 'sm' for navbar, 'md' for hero (default)
  * @param {string}       className — extra classes merged onto the wrapper <a>
@@ -19,26 +22,14 @@ export default function BookCallButton({ size = 'md', className = '', style = {}
   const LABEL = t('bookCallButton.label')
   const isSmall = size === 'sm'
   const lettersRef = useRef([])
-  const intervalRef = useRef(null)
-  const [isLightTheme, setIsLightTheme] = useState(false)
-
-  // Observe theme class changes on <html>
-  useEffect(() => {
-    const htmlEl = document.documentElement
-    const checkTheme = () => setIsLightTheme(htmlEl.classList.contains('white-active'))
-    checkTheme()
-
-    const observer = new MutationObserver(checkTheme)
-    observer.observe(htmlEl, { attributes: true, attributeFilter: ['class'] })
-    return () => observer.disconnect()
-  }, [])
 
   const basePadding = isSmall ? 'px-5 py-2.5' : 'px-8 py-4'
   const fontSize = isSmall ? 'text-xs' : 'text-sm'
   const iconSize = isSmall ? 18 : 22
 
-  useEffect(() => {
-    const playWave = () => {
+  useGSAP((context, contextSafe) => {
+    // contextSafe: tweens created later from timers are still reverted on unmount
+    const playWave = contextSafe(() => {
       const letters = lettersRef.current.filter(Boolean)
       if (!letters.length) return
 
@@ -62,40 +53,26 @@ export default function BookCallButton({ size = 'md', className = '', style = {}
           ease: 'power2.out',
         })
       })
-    }
+    })
 
-    // Play once after a short delay, then every 10 seconds
+    // Play once after a short delay, then every 5 seconds — never for
+    // reduced-motion users (an endlessly repeating animation)
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     const initialTimeout = setTimeout(playWave, 2000)
-    intervalRef.current = setInterval(playWave, 5000)
+    const interval = setInterval(playWave, 5000)
 
     return () => {
       clearTimeout(initialTimeout)
-      clearInterval(intervalRef.current)
+      clearInterval(interval)
     }
-  }, [])
+  })
 
   return (
     <a
       href="#contact"
       onClick={onClick}
-      className={`group inline-flex items-center gap-2.5 ${basePadding} ${fontSize} font-bold uppercase tracking-[0.15em] transition-all duration-200 ${className}`}
-      style={{
-        color: isLightTheme ? '#5b21b6' : '#c4b5fd',
-        border: isLightTheme ? '1.5px solid #7c3aed' : '1.5px solid #8b5cf6',
-        background: isLightTheme ? 'rgba(139, 92, 246, 0.08)' : 'rgba(139, 92, 246, 0.06)',
-        boxShadow: isLightTheme ? '-4px 4px 0 0 #7c3aed' : '-4px 4px 0 0 #8b5cf6',
-        ...style,
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.background = isLightTheme ? 'rgba(139, 92, 246, 0.18)' : 'rgba(139, 92, 246, 0.15)'
-        e.currentTarget.style.boxShadow = isLightTheme ? '-2px 2px 0 0 #7c3aed' : '-2px 2px 0 0 #8b5cf6'
-        e.currentTarget.style.transform = 'translate(-2px, 2px)'
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.background = isLightTheme ? 'rgba(139, 92, 246, 0.08)' : 'rgba(139, 92, 246, 0.06)'
-        e.currentTarget.style.boxShadow = isLightTheme ? '-4px 4px 0 0 #7c3aed' : '-4px 4px 0 0 #8b5cf6'
-        e.currentTarget.style.transform = 'translate(0, 0)'
-      }}
+      className={`btn-retro group inline-flex items-center gap-2.5 ${basePadding} ${fontSize} font-bold uppercase tracking-[0.15em] ${className}`}
+      style={style}
     >
       <span className="relative z-10 inline-flex overflow-hidden">
         {LABEL.split('').map((char, i) => (

@@ -2,47 +2,58 @@
 
 import { useRef, useEffect } from 'react'
 import * as THREE from 'three'
+import { useBrand } from '@/hooks/useBrand'
+import { onIntroDone } from '@/lib/intro'
+import { PLANET_PALETTES, createSharedUniforms, applyPalette, createGlobeMaterial } from './planetShaders'
+import { PLANETS, resolvePlanet } from './planets'
 
 /* =====================================================
-   Three.js Financial Network Visualization
-   
+   Three.js orbital scene (hero)
+
    Renders a 3D scene with:
-   - Floating nodes representing financial entities
-   - Animated connection lines between nodes
-   - Flowing data particles along connections
+   - A central planet — one of the variants in ./planets (Earth globe,
+     interactive ripple sphere, …), picked by resolvePlanet()
+   - Small moons in orbit around it
+   - Animated connection lines and flowing particles between them
    - Mouse-reactive camera movement
+   Every colour follows the active brand (see planetShaders.js).
    ===================================================== */
 
-// Hub planet billboard: visual size multiplier × NODE_DATA[CENTRAL_NODE_INDEX].scale
-const CENTRAL_PLANET_VIS_MULT = 3.0
 const CENTRAL_NODE_INDEX = 5
+/** Central planet radius (world units) */
+const CENTRAL_RADIUS = 2.5
+/** Satellite radius × node.scale */
+const SATELLITE_RADIUS = 0.13
+/** Satellites: growth factor on cursor proximity. final = base * (1 + gi * GROW) */
+const SATELLITE_GROW = 1.6
 
-/** Orbital satellites: base visible size (very small idle) × node.scale */
-const SMALL_PLANET_BASE_MULT = 0.22
-/** Orbital satellites: growth factor on cursor proximity. final = base * (1 + gi * GROW) */
-const SMALL_PLANET_GROW = 1.6
+/** Satellites' axial rotation (radians/sec) */
+const SATELLITE_SPIN = 0.4
 
-/** Slow in-plane spin (radians/sec) applied to SpriteMaterial.rotation */
-const CENTRAL_PLANET_SPIN = 0.05
-const ORBIT_PLANET_SPIN = 0.18
+/** How close the scroll zoom brings the camera to the surface (× radius) */
+const ZOOM_END_DISTANCE = 1.1
 
-// Node definitions — each represents a fintech system
+/** 1.5× is visually indistinguishable on this soft, glowing scene but ~44%
+ *  fewer pixels than 2× — matters because the planet is shaded per pixel */
+const MAX_PIXEL_RATIO = typeof window === 'undefined' ? 1 : Math.min(window.devicePixelRatio, 1.5)
+
+// Node layout. `tone` picks the node's glow colour from the brand palette.
 const NODE_DATA = [
-  { label: 'Banks', x: -7, y: 2.8, z: -1.4, color: 0xa78bfa, scale: 1.2 },
-  { label: 'Credit', x: -4.2, y: -2.1, z: 0.7, color: 0x7c3aed, scale: 1.0 },
-  { label: 'Trading', x: 5.6, y: 1.4, z: -0.7, color: 0x8b5cf6, scale: 1.1 },
-  { label: 'Invest', x: 2.8, y: -2.8, z: 1.4, color: 0xa78bfa, scale: 1.0 },
-  { label: 'API', x: -1.4, y: 4.2, z: -2.1, color: 0x7c3aed, scale: 0.8 },
-  { label: 'FMP', x: 0, y: 0, z: 0, color: 0x8b5cf6, scale: 1.4 },
-  { label: 'User', x: 7, y: -1.4, z: 0, color: 0x8b5cf6, scale: 0.9 },
-  { label: 'Data', x: -5.6, y: -4.2, z: -0.7, color: 0x7c3aed, scale: 0.9 },
-  { label: 'Risk', x: 4.2, y: 4.2, z: 0.7, color: 0xa78bfa, scale: 0.8 },
-  { label: 'Pay', x: -2.8, y: 1.4, z: 2.1, color: 0x8b5cf6, scale: 1.0 },
-  { label: 'KYC', x: 1.4, y: -4.9, z: -1.4, color: 0x7c3aed, scale: 0.7 },
-  { label: 'Ledger', x: -7.7, y: 0, z: 0, color: 0xa78bfa, scale: 0.85 },
-  { label: 'Wallet', x: 8.4, y: 3.5, z: -0.4, color: 0x7c3aed, scale: 0.9 },
-  { label: 'Stream', x: -2.1, y: -2.8, z: -1.7, color: 0x8b5cf6, scale: 0.75 },
-  { label: 'Auth', x: 3.5, y: 0, z: 2.1, color: 0xa78bfa, scale: 0.8 },
+  { x: -7, y: 2.8, z: -1.4, tone: 'soft', scale: 1.2 },
+  { x: -4.2, y: -2.1, z: 0.7, tone: 'deep', scale: 1.0 },
+  { x: 5.6, y: 1.4, z: -0.7, tone: 'base', scale: 1.1 },
+  { x: 2.8, y: -2.8, z: 1.4, tone: 'soft', scale: 1.0 },
+  { x: -1.4, y: 4.2, z: -2.1, tone: 'deep', scale: 0.8 },
+  { x: 0, y: 0, z: 0, tone: 'base', scale: 1.4 }, // central planet
+  { x: 7, y: -1.4, z: 0, tone: 'base', scale: 0.9 },
+  { x: -5.6, y: -4.2, z: -0.7, tone: 'deep', scale: 0.9 },
+  { x: 4.2, y: 4.2, z: 0.7, tone: 'soft', scale: 0.8 },
+  { x: -2.8, y: 1.4, z: 2.1, tone: 'base', scale: 1.0 },
+  { x: 1.4, y: -4.9, z: -1.4, tone: 'deep', scale: 0.7 },
+  { x: -7.7, y: 0, z: 0, tone: 'soft', scale: 0.85 },
+  { x: 8.4, y: 3.5, z: -0.4, tone: 'deep', scale: 0.9 },
+  { x: -2.1, y: -2.8, z: -1.7, tone: 'base', scale: 0.75 },
+  { x: 3.5, y: 0, z: 2.1, tone: 'soft', scale: 0.8 },
 ]
 
 // Define which nodes are connected
@@ -84,11 +95,21 @@ function buildNodeIntroOrder() {
 const INTRO_STAGGER_MS = 95
 const INTRO_DURATION_MS = 420
 
-export default function FinancialNetwork({ zoomProgress, onNodesIntroComplete }) {
+export default function OrbitScene({ zoomProgress, onNodesIntroComplete }) {
   const containerRef = useRef(null)
   const mouseRef = useRef({ x: 0, y: 0 })
-  const onIntroDoneRef = useRef(onNodesIntroComplete)
-  onIntroDoneRef.current = onNodesIntroComplete
+  const onNodesIntroDoneRef = useRef(onNodesIntroComplete)
+  onNodesIntroDoneRef.current = onNodesIntroComplete
+
+  const brand = useBrand()
+  const brandRef = useRef(brand)
+  brandRef.current = brand
+  // Set by the scene effect; recolours the live scene without rebuilding it
+  const applyBrandRef = useRef(null)
+
+  useEffect(() => {
+    applyBrandRef.current?.(brand)
+  }, [brand])
 
   useEffect(() => {
     const container = containerRef.current
@@ -104,13 +125,23 @@ export default function FinancialNetwork({ zoomProgress, onNodesIntroComplete })
     )
     camera.position.set(0, 0, 12)
 
-    const renderer = new THREE.WebGLRenderer({
-      alpha: true,
-      antialias: true,
-      powerPreference: 'high-performance',
-    })
+    // WebGL can be disabled, unsupported, or out of contexts. Fail soft: the
+    // CSS backdrop still renders, and the hero text entrance starts at once.
+    let renderer
+    try {
+      renderer = new THREE.WebGLRenderer({
+        alpha: true,
+        antialias: true,
+        powerPreference: 'high-performance',
+      })
+    } catch (err) {
+      console.warn('OrbitScene: WebGL unavailable, skipping 3D scene', err)
+      onNodesIntroDoneRef.current?.()
+      return
+    }
+    renderer.setClearColor(0x000000, 0)
     renderer.setSize(container.clientWidth, container.clientHeight)
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    renderer.setPixelRatio(MAX_PIXEL_RATIO)
     container.appendChild(renderer.domElement)
 
     // --- Create Glow Texture ---
@@ -126,76 +157,56 @@ export default function FinancialNetwork({ zoomProgress, onNodesIntroComplete })
     glowCtx.fillRect(0, 0, 64, 64)
     const glowTexture = new THREE.CanvasTexture(glowCanvas)
 
-    const planetTex = new THREE.TextureLoader().load('/planet.png', (tex) => {
-      tex.colorSpace = THREE.SRGBColorSpace
-    })
-    const smallPlanetTex = new THREE.TextureLoader().load('/small-planet.png', (tex) => {
-      tex.colorSpace = THREE.SRGBColorSpace
-    })
+    // --- Planet materials (shared palette / time / light uniforms) ---
+    const shared = createSharedUniforms()
 
     // --- Create Nodes ---
     const nodeGroup = new THREE.Group()
     const nodeMeshes = []
+    const satelliteGeometry = new THREE.SphereGeometry(1, 40, 28)
 
-    NODE_DATA.forEach((node, index) => {
-      if (index === CENTRAL_NODE_INDEX) {
-        const planetMaterial = new THREE.SpriteMaterial({
-          map: planetTex,
-          transparent: true,
-          depthWrite: false,
-        })
-        const planetSprite = new THREE.Sprite(planetMaterial)
-        planetSprite.position.set(node.x, node.y, node.z)
-        const baseVis = node.scale * CENTRAL_PLANET_VIS_MULT
-        planetSprite.scale.setScalar(baseVis)
-        nodeGroup.add(planetSprite)
-
-        const spriteMaterial = new THREE.SpriteMaterial({
-          map: glowTexture,
-          color: node.color,
-          transparent: true,
-          opacity: 0.35,
-          blending: THREE.AdditiveBlending,
-        })
-        const sprite = new THREE.Sprite(spriteMaterial)
-        sprite.position.copy(planetSprite.position)
-        sprite.scale.setScalar(node.scale * 1.5)
-        nodeGroup.add(sprite)
-
-        nodeMeshes.push({
-          mesh: planetSprite,
-          sprite,
-          data: node,
-          baseY: node.y,
-        })
-        return
-      }
-
-      // Orbital satellite — small-planet billboard
-      const orbitMat = new THREE.SpriteMaterial({
-        map: smallPlanetTex,
-        transparent: true,
-        depthWrite: false,
-      })
-      const planetSprite = new THREE.Sprite(orbitMat)
-      planetSprite.position.set(node.x, node.y, node.z)
-      planetSprite.scale.setScalar(node.scale * SMALL_PLANET_BASE_MULT)
-      nodeGroup.add(planetSprite)
-
-      // Glow sprite (additive halo, fades up with cursor proximity)
-      const spriteMaterial = new THREE.SpriteMaterial({
+    const haloMaterial = () =>
+      new THREE.SpriteMaterial({
         map: glowTexture,
-        color: node.color,
         transparent: true,
         opacity: 0.35,
+        depthWrite: false,
         blending: THREE.AdditiveBlending,
       })
-      const sprite = new THREE.Sprite(spriteMaterial)
-      sprite.position.copy(planetSprite.position)
-      sprite.scale.setScalar(node.scale * SMALL_PLANET_BASE_MULT * 1.4)
+
+    // Central planet (variant), revolving on its own; update()d every frame
+    const centralPlanet = PLANETS[resolvePlanet()]({
+      renderer,
+      shared,
+      radius: CENTRAL_RADIUS,
+      camera,
+    })
+    const centralGroup = centralPlanet.object
+
+    NODE_DATA.forEach((node, index) => {
+      const isCentral = index === CENTRAL_NODE_INDEX
+      const body = isCentral
+        ? centralGroup
+        : new THREE.Mesh(
+            satelliteGeometry,
+            createGlobeMaterial(shared, { seed: index * 7.13, land: false, contourDensity: 7 })
+          )
+      body.position.set(node.x, node.y, node.z)
+      nodeGroup.add(body)
+
+      // Glow sprite (additive halo; satellites' fades up with cursor proximity)
+      const sprite = new THREE.Sprite(haloMaterial())
+      sprite.position.copy(body.position)
       nodeGroup.add(sprite)
 
-      nodeMeshes.push({ mesh: planetSprite, sprite, data: node, baseY: node.y })
+      nodeMeshes.push({
+        mesh: body,
+        // What spins on its own axis (the central planet spins itself)
+        spinner: isCentral ? null : body,
+        sprite,
+        data: node,
+        baseY: node.y,
+      })
     })
     scene.add(nodeGroup)
 
@@ -210,7 +221,6 @@ export default function FinancialNetwork({ zoomProgress, onNodesIntroComplete })
       ]
       const geometry = new THREE.BufferGeometry().setFromPoints(points)
       const material = new THREE.LineBasicMaterial({
-        color: 0xa78bfa,
         transparent: true,
         opacity: 0,
       })
@@ -234,7 +244,6 @@ export default function FinancialNetwork({ zoomProgress, onNodesIntroComplete })
     particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3))
 
     const particleMaterial = new THREE.PointsMaterial({
-      color: 0xa78bfa,
       size: 0.04,
       transparent: true,
       opacity: 0,
@@ -255,13 +264,24 @@ export default function FinancialNetwork({ zoomProgress, onNodesIntroComplete })
     const ambientGeometry = new THREE.BufferGeometry()
     ambientGeometry.setAttribute('position', new THREE.BufferAttribute(ambientPositions, 3))
     const ambientMaterial = new THREE.PointsMaterial({
-      color: 0xa78bfa,
       size: 0.015,
       transparent: true,
       opacity: 0,
       blending: THREE.AdditiveBlending,
     })
     scene.add(new THREE.Points(ambientGeometry, ambientMaterial))
+
+    // --- Brand colours ---
+    const applyBrand = (brandName) => {
+      const palette = PLANET_PALETTES[brandName] ?? PLANET_PALETTES.violet
+      applyPalette(shared, palette)
+      nodeMeshes.forEach((n) => n.sprite.material.color.setHex(palette.glow[n.data.tone]))
+      lineGroup.children.forEach((line) => line.material.color.setHex(palette.glow.soft))
+      particleMaterial.color.setHex(palette.glow.soft)
+      ambientMaterial.color.setHex(palette.glow.soft)
+    }
+    applyBrand(brandRef.current)
+    applyBrandRef.current = applyBrand
 
     // --- Mouse Tracking ---
     const handleMouseMove = (e) => {
@@ -276,6 +296,7 @@ export default function FinancialNetwork({ zoomProgress, onNodesIntroComplete })
     const mouseVec = new THREE.Vector2()
     const repulsionPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0)
     const mouseWorld = new THREE.Vector3() // cursor position in world space
+    const hitPoint = new THREE.Vector3() // reused every frame to avoid GC churn
 
     // --- Orbital revolution setup ---
     // Precompute polar coords (angle + radius) for each node relative to the center
@@ -313,46 +334,84 @@ export default function FinancialNetwork({ zoomProgress, onNodesIntroComplete })
 
     // --- Animation Loop ---
     let animationId
+    let running = false
+    let lowRes = false
+    let lastFrameTime = performance.now()
     const clock = new THREE.Clock()
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    // The intro (nodes popping in) is timed from when the page is revealed,
+    // i.e. when the preloader lifts — not from mount, which is behind it
+    let introStarted = false
+    const stopWaitingForIntro = onIntroDone(() => {
+      clock.start()
+      introStarted = true
+    })
 
     const animate = () => {
+      if (!running) return
       animationId = requestAnimationFrame(animate)
-      const elapsed = clock.getElapsedTime()
-      const elapsedMs = elapsed * 1000
+      const clockTime = introStarted ? clock.getElapsedTime() : 0
+      const now = performance.now()
+      const delta = (now - lastFrameTime) / 1000
+      lastFrameTime = now
+      // Reduced motion: no ambient motion (orbit, float, spin, pulse) and the
+      // intro is shown already complete
+      const elapsed = reduceMotion ? 0 : clockTime
+      const elapsedMs = reduceMotion ? introTotalMs : clockTime * 1000
 
       // Scroll-driven zoom progress (0 → 1)
       const zoomValue = zoomProgress?.current?.value ?? 0
-      const mouseInfluence = 1 - zoomValue
+      const mouseInfluence = reduceMotion ? 0 : 1 - zoomValue
 
       // Camera follows mouse, but influence fades as we zoom in
       camera.position.x += (mouseRef.current.x * 1.5 * mouseInfluence - camera.position.x) * 0.02
       camera.position.y += (mouseRef.current.y * 1.0 * mouseInfluence - camera.position.y) * 0.02
 
-      // Zoom camera deep into the central purple node
-      const targetZ = 12 - zoomValue * 11.8 // 12 → 0.2
-      camera.position.z += (targetZ - camera.position.z) * 0.15
+      // Zoom the camera toward the planet, stopping just above its surface
+      // (the hero's stage overlay takes over from there)
+      const endZ = CENTRAL_RADIUS * ZOOM_END_DISTANCE
+      camera.position.z = 12 - zoomValue * (12 - endZ)
+
+      // Performance: the shaded planet filling the screen is the expensive
+      // moment. Drop to 1× while it does (hysteresis so it can't flicker),
+      // and don't draw at all once the hero's overlay fully covers the scene.
+      const wantLowRes = zoomValue > (lowRes ? 0.5 : 0.55)
+      if (wantLowRes !== lowRes) {
+        lowRes = wantLowRes
+        renderer.setPixelRatio(lowRes ? 1 : MAX_PIXEL_RATIO)
+      }
+      const hiddenByOverlay = zoomValue > 0.92
+
+      shared.uTime.value = elapsed
+      shared.uPixelRatio.value = renderer.getPixelRatio()
+      centralPlanet.update({
+        elapsed,
+        delta,
+        zoom: zoomValue,
+        intro: introEaseForNode(CENTRAL_NODE_INDEX, elapsedMs),
+        reduceMotion,
+      })
 
       camera.lookAt(0, 0, 0)
 
-      // Central node index (FMP — rendered as planet billboard)
       const centralIdx = CENTRAL_NODE_INDEX
 
       const introDone = elapsedMs >= introTotalMs
       if (
         introDone &&
         !introDoneNotified &&
-        typeof onIntroDoneRef.current === 'function'
+        typeof onNodesIntroDoneRef.current === 'function'
       ) {
         introDoneNotified = true
         queueMicrotask(() => {
-          onIntroDoneRef.current?.()
+          onNodesIntroDoneRef.current?.()
         })
       }
 
       // --- Project mouse into world space for ripple repulsion ---
       mouseVec.set(mouseRef.current.x, mouseRef.current.y)
       raycaster.setFromCamera(mouseVec, camera)
-      const hitPoint = new THREE.Vector3()
       const didHit = raycaster.ray.intersectPlane(repulsionPlane, hitPoint)
       if (didHit) mouseWorld.copy(hitPoint)
 
@@ -410,11 +469,8 @@ export default function FinancialNetwork({ zoomProgress, onNodesIntroComplete })
         n.mesh.position.z = baseZ + offset.z
         n.sprite.position.copy(n.mesh.position)
 
-        // Slow in-plane planet spin — alternating direction per index for variety.
-        const spinSpeed =
-          i === centralIdx ? CENTRAL_PLANET_SPIN : ORBIT_PLANET_SPIN
-        const spinDir = i % 2 === 0 ? 1 : -1
-        n.mesh.material.rotation = elapsed * spinSpeed * spinDir
+        // Axial rotation — satellites alternate direction for variety
+        if (n.spinner) n.spinner.rotation.y = elapsed * SATELLITE_SPIN * (i % 2 === 0 ? 1 : -1)
 
         // --- Cursor-proximity glow ---
         if (i !== centralIdx && didHit) {
@@ -431,27 +487,16 @@ export default function FinancialNetwork({ zoomProgress, onNodesIntroComplete })
         }
 
         if (i === centralIdx) {
-          const baseScale =
-            n.data.scale *
-            CENTRAL_PLANET_VIS_MULT *
-            (1 + Math.sin(elapsed * 2 + i) * 0.05) *
-            introTe
-          const zoomScale = baseScale + zoomValue * 12 * introTe
-          n.mesh.scale.setScalar(zoomScale)
-          n.sprite.scale.setScalar(zoomScale * 1.6)
-          n.sprite.material.opacity =
-            (0.4 + zoomValue * 0.6) * introTe
+          n.mesh.scale.setScalar(introTe)
+          n.sprite.scale.setScalar(CENTRAL_RADIUS * 4.2 * introTe)
+          n.sprite.material.opacity = 0.3 * introTe * (1 - zoomValue)
         } else {
           const gi = glowIntensity[i]
-          const pulse = 1 + Math.sin(elapsed * 2 + i) * 0.05
-          const idleSize = n.data.scale * SMALL_PLANET_BASE_MULT * pulse
-          n.mesh.scale.setScalar(idleSize * (1 + gi * SMALL_PLANET_GROW) * introTe)
-          // Glow halo is decoupled from tiny planet size so it actually reads.
-          n.sprite.scale.setScalar(
-            n.data.scale * 1.2 * (1 + gi * 2.5) * introTe
-          )
-          n.sprite.material.opacity = (0.4 + gi * 0.6) * introTe
-          n.mesh.material.opacity = introTe
+          const size = n.data.scale * SATELLITE_RADIUS
+          n.mesh.scale.setScalar(size * (1 + gi * SATELLITE_GROW) * introTe)
+          // Glow halo is decoupled from the small planet's size so it actually reads
+          n.sprite.scale.setScalar(n.data.scale * 1.2 * (1 + gi * 2.5) * introTe)
+          n.sprite.material.opacity = (0.35 + gi * 0.6) * introTe
         }
       })
 
@@ -478,7 +523,7 @@ export default function FinancialNetwork({ zoomProgress, onNodesIntroComplete })
       // Animate flowing particles along connections
       const posArray = particles.geometry.attributes.position.array
       for (let i = 0; i < PARTICLE_COUNT; i++) {
-        particleProgress[i] += particleSpeeds[i]
+        particleProgress[i] += reduceMotion ? 0 : particleSpeeds[i]
         if (particleProgress[i] > 1) {
           particleProgress[i] = 0
           particleConnectionIdx[i] = Math.floor(Math.random() * CONNECTIONS.length)
@@ -499,9 +544,27 @@ export default function FinancialNetwork({ zoomProgress, onNodesIntroComplete })
       particleMaterial.opacity = 0.7 * flowReveal
       ambientMaterial.opacity = 0.3 * flowReveal
 
-      renderer.render(scene, camera)
+      if (!hiddenByOverlay) renderer.render(scene, camera)
     }
-    animate()
+
+    const start = () => {
+      if (running) return
+      running = true
+      animationId = requestAnimationFrame(animate)
+    }
+    const stop = () => {
+      running = false
+      cancelAnimationFrame(animationId)
+    }
+
+    // Only render while the hero is on screen — saves GPU/battery for the
+    // rest of the visit once the user has scrolled past it.
+    const visibilityObserver = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) start()
+      else stop()
+    })
+    visibilityObserver.observe(container)
+    start()
 
     // --- Resize Handler ---
     const handleResize = () => {
@@ -513,15 +576,23 @@ export default function FinancialNetwork({ zoomProgress, onNodesIntroComplete })
 
     // --- Cleanup ---
     return () => {
-      cancelAnimationFrame(animationId)
+      stop()
+      centralPlanet.dispose()
+      applyBrandRef.current = null
+      stopWaitingForIntro()
+      visibilityObserver.disconnect()
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('resize', handleResize)
-      renderer.dispose()
-      particleGeometry.dispose()
-      ambientGeometry.dispose()
+      // Free every geometry/material on the GPU, not just a few
+      scene.traverse((obj) => {
+        obj.geometry?.dispose()
+        obj.material?.dispose()
+      })
       glowTexture.dispose()
-      planetTex.dispose()
-      smallPlanetTex.dispose()
+      renderer.dispose()
+      // Release the context immediately — browsers cap live WebGL contexts,
+      // and dev hot reloads would otherwise pile them up
+      renderer.forceContextLoss()
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement)
       }

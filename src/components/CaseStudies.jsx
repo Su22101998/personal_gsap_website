@@ -1,229 +1,145 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
+import { useRef } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useGSAP } from '@gsap/react'
 import { useTranslation } from '@/i18n'
+import { toneProps } from '@/lib/tone'
+import { bleedBackground } from '@/lib/animation'
+import RevealText from '@/components/RevealText'
+import PlaceholderArt from '@/components/PlaceholderArt'
+import AnimatedCounter from '@/components/AnimatedCounter'
 
-gsap.registerPlugin(ScrollTrigger)
+gsap.registerPlugin(ScrollTrigger, useGSAP)
 
-const CASE_COLORS = [
-  'var(--accent-teal)',
-  'var(--accent-blue)',
-  'var(--accent-purple)',
-  'var(--accent-teal)',
-]
-
-/**
- * Animated counter that counts up to a target value when in view.
- */
-function AnimatedCounter({ value, suffix, triggerRef }) {
-  const counterRef = useRef(null)
-
-  useEffect(() => {
-    const counter = { val: 0 }
-
-    gsap.to(counter, {
-      val: value,
-      duration: 2,
-      ease: 'power2.out',
-      scrollTrigger: {
-        trigger: triggerRef.current,
-        start: 'top 70%',
-      },
-      onUpdate: () => {
-        if (counterRef.current) {
-          // Format: show one decimal if value has decimals, otherwise integer
-          const formatted =
-            value % 1 !== 0
-              ? counter.val.toFixed(1)
-              : Math.round(counter.val).toLocaleString()
-          counterRef.current.textContent = formatted + suffix
-        }
-      },
-    })
-  }, [value, suffix, triggerRef])
-
-  return (
-    <span
-      ref={counterRef}
-      className="counter-value text-2xl md:text-3xl font-bold"
-      style={{ color: 'var(--text-primary)' }}
-    >
-      0{suffix}
-    </span>
-  )
-}
+// Artwork per case (indexes into PlaceholderArt compositions)
+const CASE_ART = [0, 1, 4]
 
 /**
- * Mock dashboard graphic rendered with CSS — represents a financial UI.
+ * Featured case studies — stacked sticky panels. Each panel pins near the
+ * top while the next one slides over it; the covered panel recedes
+ * (scales down, a shade fades over it). Pinning is plain CSS sticky; GSAP
+ * only scrubs transform/opacity (compositor-only, so no repaints while
+ * scrolling), and the same on mobile. The section bleeds from the
+ * accent tone to ink at the end, handing over to Process.
  */
-function MockDashboard({ color }) {
-  return (
-    <div className="relative w-full h-48 md:h-56 rounded-xl overflow-hidden" style={{ background: 'var(--bg-secondary)' }}>
-      {/* Top bar */}
-      <div className="flex items-center gap-2 px-4 py-2" style={{ borderBottom: '1px solid var(--border-color)' }}>
-        <div className="w-2 h-2 rounded-full" style={{ background: '#ef4444' }} />
-        <div className="w-2 h-2 rounded-full" style={{ background: '#f59e0b' }} />
-        <div className="w-2 h-2 rounded-full" style={{ background: '#22c55e' }} />
-        <div className="flex-1" />
-        <div className="w-16 h-1.5 rounded" style={{ background: 'var(--border-color)' }} />
-      </div>
-
-      {/* Mock chart area */}
-      <div className="p-4 flex gap-3 h-full">
-        {/* Sidebar */}
-        <div className="w-1/4 flex flex-col gap-2">
-          {[85, 72, 60, 90].map((w, i) => (
-            <div
-              key={i}
-              className="h-3 rounded"
-              style={{
-                background: i === 0 ? color : 'var(--border-color)',
-                opacity: i === 0 ? 0.6 : 0.3,
-                width: `${w}%`,
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Chart bars — deterministic heights avoid hydration mismatch */}
-        <div className="flex-1 flex items-end gap-1 pb-4">
-          {[65, 40, 30, 80, 55, 25, 72, 38, 50, 88, 45, 60].map((h, i) => (
-            <div
-              key={i}
-              className="flex-1 rounded-t transition-all duration-500"
-              style={{
-                height: `${h}%`,
-                background:
-                  i % 3 === 0
-                    ? color
-                    : 'var(--border-color)',
-                opacity: i % 3 === 0 ? 0.7 : 0.2,
-              }}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export default function CaseStudies() {
-  const { t } = useTranslation()
-  const caseStudies = t('caseStudies.cases').map((c, i) => ({ ...c, image: null, color: CASE_COLORS[i] }))
-
   const sectionRef = useRef(null)
-  const cardsRef = useRef([])
+  const { t } = useTranslation()
+  const cases = t('caseStudies.cases')
 
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.from('.cases-title', {
-        y: 60,
-        opacity: 0,
-        duration: 1,
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: 'top 80%',
-        },
+  useGSAP(
+    () => {
+      const section = sectionRef.current
+      const mm = gsap.matchMedia()
+
+      // Colour hand-off to Process (ink). Must be complete before the
+      // section's bottom edge scrolls into view, or the seam shows.
+      // Runs for reduced motion too.
+      bleedBackground(section, {
+        from: 'stage',
+        to: 'ink',
+        trigger: section,
+        start: 'bottom 190%',
+        end: 'bottom 100%',
       })
 
-      cardsRef.current.forEach((card, i) => {
-        if (!card) return
-        gsap.from(card, {
-          y: 80,
-          opacity: 0,
-          duration: 0.8,
-          delay: i * 0.15,
-          scrollTrigger: {
-            trigger: card,
-            start: 'top 85%',
-          },
+      mm.add('(prefers-reduced-motion: no-preference)', () => {
+        const panels = gsap.utils.toArray('.case-panel', section)
+
+        panels.forEach((panel, i) => {
+          const next = panels[i + 1]
+          if (next) {
+            // Recede while the next panel slides over: scale + a shade that
+            // dims it without hiding it
+            const recede = {
+              trigger: next,
+              start: 'top bottom',
+              end: 'top 12%',
+              scrub: true,
+            }
+            gsap.to(panel.querySelector('.case-card'), { scale: 0.94, ease: 'none', scrollTrigger: recede })
+            gsap.to(panel.querySelector('.case-shade'), { opacity: 0.3, ease: 'none', scrollTrigger: recede })
+          }
+
+          // Artwork opens with the scroll as the panel rises, fully open
+          // well before the panel settles — never blank while readable
+          gsap.fromTo(
+            panel.querySelector('.case-art'),
+            { clipPath: 'inset(16% 6% 16% 6% round 18px)' },
+            {
+              clipPath: 'inset(0% 0% 0% 0% round 18px)',
+              ease: 'none',
+              scrollTrigger: { trigger: panel, start: 'top bottom', end: 'top 45%', scrub: true },
+            }
+          )
         })
       })
-    }, sectionRef)
-
-    return () => ctx.revert()
-  }, [])
+    },
+    { scope: sectionRef }
+  )
 
   return (
-    <section ref={sectionRef} id="cases" className="section-padding relative">
-      <div className="absolute inset-0 bg-fintech-grid opacity-30" />
+    <section
+      ref={sectionRef}
+      id="cases"
+      {...toneProps('accent')}
+      className="relative px-4 pb-[30vh] pt-28 md:px-12 md:pt-36 lg:px-24"
+    >
+      <div className="mx-auto mb-16 max-w-6xl md:mb-24">
+        <p className="eyebrow mb-6">{t('caseStudies.label')}</p>
+        <RevealText as="h2" className="heading-section">
+          {t('caseStudies.heading')}
+        </RevealText>
+      </div>
 
-      <div className="relative z-10 max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="cases-title text-center mb-16">
-          <span
-            className="inline-block px-3 py-1 rounded-full text-xs font-medium tracking-wider uppercase mb-4"
-            style={{ color: 'var(--accent-teal)', background: 'var(--glow-color)' }}
+      <div className="mx-auto max-w-6xl">
+        {cases.map((study, i) => (
+          <div
+            key={study.client}
+            className="case-panel sticky mb-[12vh]"
+            style={{ top: `calc(12vh + ${i * 14}px)` }}
           >
-            {t('caseStudies.sectionLabel')}
-          </span>
-          <h2 className="heading-section mb-4">
-            {t('caseStudies.heading')}{' '}
-            <span className="bg-gradient-to-r from-[var(--accent-teal)] to-[var(--accent-blue)] bg-clip-text text-transparent">
-              {t('caseStudies.headingAccent')}
-            </span>
-          </h2>
-          <p className="section-subtitle mx-auto text-center">
-            {t('caseStudies.description')}
-          </p>
-        </div>
-
-        {/* Case Study Cards */}
-        <div className="grid md:grid-cols-2 gap-8">
-          {caseStudies.map((study, idx) => (
-            <div
-              key={idx}
-              ref={(el) => (cardsRef.current[idx] = el)}
-              className="fintech-card overflow-hidden group"
+            <article
+              className="case-card relative grid origin-top gap-8 overflow-hidden rounded-[28px] p-6 will-change-transform md:min-h-[70vh] md:grid-cols-2 md:gap-12 md:p-12"
+              data-tone="ink"
             >
-              {/* Dashboard Preview */}
-              <MockDashboard color={study.color} />
-
-              {/* Content */}
-              <div className="p-6 md:p-8">
-                <span
-                  className="text-xs uppercase tracking-wider font-medium"
-                  style={{ color: study.color }}
-                >
-                  {study.category}
-                </span>
-                <h3
-                  className="text-xl md:text-2xl font-bold mt-1 mb-3"
-                  style={{ color: 'var(--text-primary)' }}
-                >
-                  {study.title}
-                </h3>
-                <p
-                  className="text-sm leading-relaxed mb-6"
-                  style={{ color: 'var(--text-secondary)' }}
-                >
+              {/* Dims the card as the next one covers it (see the recede tween) */}
+              <div aria-hidden="true" className="case-shade pointer-events-none absolute inset-0 z-10 bg-black opacity-0" />
+              <div className="flex flex-col">
+                <p className="mb-4 text-[11px] uppercase tracking-[0.2em]" style={{ color: 'var(--fg-subtle)' }}>
+                  <span style={{ color: 'var(--accent)' }}>{String(i + 1).padStart(2, '0')}</span>
+                  <span className="mx-3">—</span>
+                  {study.client} · {study.category}
+                </p>
+                <h3 className="heading-display mb-6 text-3xl md:text-5xl">{study.title}</h3>
+                <p className="mb-10 max-w-md" style={{ color: 'var(--fg-muted)' }}>
                   {study.description}
                 </p>
 
-                {/* Animated Stats */}
-                <div className="grid grid-cols-3 gap-4">
-                  {study.stats.map((stat, sIdx) => (
-                    <div key={sIdx}>
-                      <AnimatedCounter
-                        value={stat.value}
-                        suffix={stat.suffix}
-                        triggerRef={sectionRef}
-                      />
-                      <p
-                        className="text-[10px] uppercase tracking-wider mt-1"
-                        style={{ color: 'var(--text-muted)' }}
-                      >
+                <dl className="mt-auto grid grid-cols-3 gap-4 border-t pt-6" style={{ borderColor: 'var(--hairline)' }}>
+                  {study.stats.map((stat) => (
+                    // dt must precede dd; flex-col-reverse shows the number first
+                    <div key={stat.label} className="flex flex-col-reverse">
+                      <dt className="mt-1 text-[11px] uppercase tracking-[0.14em]" style={{ color: 'var(--fg-subtle)' }}>
                         {stat.label}
-                      </p>
+                      </dt>
+                      <dd className="heading-dot text-3xl md:text-4xl">
+                        <AnimatedCounter value={stat.value} suffix={stat.suffix} />
+                      </dd>
                     </div>
                   ))}
-                </div>
+                </dl>
               </div>
-            </div>
-          ))}
-        </div>
+
+              <PlaceholderArt
+                seed={CASE_ART[i % CASE_ART.length]}
+                className="case-art min-h-[260px] rounded-[18px] md:min-h-0"
+              />
+            </article>
+          </div>
+        ))}
       </div>
     </section>
   )

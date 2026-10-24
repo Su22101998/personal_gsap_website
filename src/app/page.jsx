@@ -1,88 +1,66 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
-import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useRef } from 'react'
+import { usePageTheme } from '@/hooks/usePageTheme'
 import Navbar from '@/components/Navbar'
+import ScrollProgress from '@/components/ScrollProgress'
 import Hero from '@/components/Hero'
-import FintechSystems from '@/components/FintechSystems'
-import ExperienceTimeline from '@/components/ExperienceTimeline'
+import Manifesto from '@/components/Manifesto'
+import Services from '@/components/Services'
+import SelectedWork from '@/components/SelectedWork'
 import CaseStudies from '@/components/CaseStudies'
-import DataPlayground from '@/components/DataPlayground'
-import Skills from '@/components/Skills'
-import About from '@/components/About'
+import Process from '@/components/Process'
+import Clients from '@/components/Clients'
+import Studio from '@/components/Studio'
+import Testimonials from '@/components/Testimonials'
 import Contact from '@/components/Contact'
 import Footer from '@/components/Footer'
 
-gsap.registerPlugin(ScrollTrigger)
-
+/*
+ * Page flow (tone → how it hands over to the next section):
+ *   Hero (ink)            planet zoom fills the screen with the accent colour
+ *   Manifesto (accent)    pinned word reveal, then bleeds to ink
+ *   Services (ink)        Selected Work rises over it as a rounded card
+ *   Selected Work (paper) horizontal track, then a radial accent wipe
+ *   Case Studies (accent) stacked panels, then bleeds to ink
+ *   Process, Clients (ink)
+ *   Studio, Testimonials (paper)  Studio rises in as a card
+ *   Contact (accent)      rises in as a card
+ *   Footer (ink)          revealed underneath, curtain-style
+ *
+ * Each section colours itself (data-tone) and marks where the page stage
+ * changes (data-stage) — see lib/tone.js and hooks/usePageTheme.js.
+ */
 export default function HomePage() {
-  const purpleWrapperRef = useRef(null)
-  const transitionRef = useRef(null)
+  const mainRef = useRef(null)
 
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      // Scroll-driven background colour transition: purple → white
-      gsap.to(purpleWrapperRef.current, {
-        backgroundColor: '#ffffff',
-        ease: 'none',
-        scrollTrigger: {
-          trigger: transitionRef.current,
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: 1,
-        },
-      })
-
-      // Switch to white theme variables when transition completes
-      ScrollTrigger.create({
-        trigger: transitionRef.current,
-        start: 'center center',
-        onEnter: () => {
-          document.documentElement.classList.add('white-active')
-          document.documentElement.classList.remove('purple-active')
-        },
-        onLeaveBack: () => {
-          document.documentElement.classList.remove('white-active')
-          document.documentElement.classList.add('purple-active')
-        },
-      })
-    })
-
-    return () => ctx.revert()
-  }, [])
+  // data-stage on <html> is driven only by the data-stage markers in the sections
+  usePageTheme(mainRef)
 
   return (
-    <main>
+    <main ref={mainRef}>
       <Navbar />
-      <Hero />
 
-      {/* Single continuous wrapper — bg animates purple → white via scrub.
-          ExperienceTimeline lives inside so there is no seam at the boundary.
-          The radial wipe inside the carousel visually brings purple back,
-          and the next div picks up with a real purple bg. */}
-      <div ref={purpleWrapperRef} style={{ backgroundColor: '#8b5cf6' }}>
-        <FintechSystems />
-
-        {/* Scroll-driven trigger zone for the colour transition */}
-        <div
-          ref={transitionRef}
-          className="relative h-[40vh]"
-          aria-hidden="true"
-        />
-
-        <ExperienceTimeline />
-      </div>
-
-      {/* Post-carousel sections — purple bg revealed once the radial wipe fills */}
-      <div style={{ backgroundColor: '#8b5cf6' }}>
+      {/* Content sits above the sticky footer. Its own background follows the
+          page stage, so the corners around the clip-reveal cards show the
+          previous section's colour rather than the footer underneath. */}
+      <div className="relative z-[1]" style={{ background: 'var(--bg)' }}>
+        <Hero />
+        <Manifesto />
+        <Services />
+        <SelectedWork />
         <CaseStudies />
-        <DataPlayground />
-        <Skills />
-        <About />
+        <Process />
+        <Clients />
+        <Studio />
+        <Testimonials />
         <Contact />
-        <Footer />
       </div>
+
+      <Footer />
+
+      {/* After the content: its triggers must be created after the hero pin */}
+      <ScrollProgress />
     </main>
   )
 }

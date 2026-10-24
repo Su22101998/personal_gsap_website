@@ -3,31 +3,102 @@
 @tailwind utilities;
 
 /* ============================================
-   CSS Custom Properties — Dark (default) palette
-   The site starts dark; the hero scroll transition
-   adds .purple-active to flip everything to #8b5cf6.
+   Design tokens
+
+   1. Brand  (data-brand="violet|noir" on <html>) — raw palette as RGB
+      channels so any colour can take alpha: rgb(var(--c-accent) / 0.5)
+
+   2. Tone   (ink | accent | paper) — maps the brand palette to role
+      tokens (--bg, --fg, --accent, --hairline…). Applied in two places:
+        - data-tone on a section: colours that section's own subtree, so
+          its text always matches its own background, wherever its edges
+          are on screen.
+        - data-stage on <html>: the tone of whatever is under the fixed
+          navbar (set by usePageTheme). Drives fixed UI and the page bg.
+
+   Stage selectors are scoped to :root on purpose — sections also carry a
+   data-stage marker attribute for usePageTheme, and that must not
+   restyle them (data-tone does that, deliberately).
+
+   Stage-independent fills (overlays, bleeds) use the brand channels
+   directly, e.g. rgb(var(--c-stage)).
    ============================================ */
-:root {
-  --bg-primary: #000000;
-  --bg-secondary: #0f172a;
-  --bg-card: #111827;
-  --bg-card-hover: #1e293b;
-  --border-color: #1e293b;
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --accent-teal: #a78bfa;
-  --accent-blue: #7c3aed;
-  --accent-purple: #8b5cf6;
-  --glow-color: rgba(139, 92, 246, 0.15);
-  --glow-strong: rgba(139, 92, 246, 0.35);
-  --glass-bg: rgba(15, 23, 42, 0.6);
-  --glass-border: rgba(30, 41, 59, 0.8);
-  --particle-color: #a78bfa;
-  --grid-color: rgba(139, 92, 246, 0.025);
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
-  --shadow-md: 0 4px 20px rgba(0,0,0,0.4);
-  --shadow-lg: 0 10px 40px rgba(0,0,0,0.5);
+
+/* ---------- Brand palettes ---------- */
+:root,
+:root[data-brand='violet'] {
+  --c-ink: 11 10 15;              /* #0b0a0f */
+  --c-paper: 250 249 252;         /* #faf9fc */
+  --c-accent: 139 92 246;         /* #8b5cf6 — signature (planet) */
+  --c-accent-soft: 167 139 250;   /* #a78bfa */
+  --c-accent-deep: 124 58 237;    /* #7c3aed — accent on paper */
+  --c-accent-ink: 46 16 101;      /* #2e1065 — accent on the accent tone */
+  --c-surface-paper: 243 239 252; /* #f3effc */
+  --c-stage: 139 92 246;          /* accent tone fill — the planet's purple */
+}
+
+:root[data-brand='noir'] {
+  --c-ink: 10 9 8;                /* #0a0908 */
+  --c-paper: 243 239 231;         /* #f3efe7 ivory */
+  --c-accent: 201 169 110;        /* #c9a96e champagne gold */
+  --c-accent-soft: 226 207 166;   /* #e2cfa6 */
+  --c-accent-deep: 140 108 56;    /* #8c6c38 — gold with contrast on ivory */
+  --c-accent-ink: 201 169 110;    /* gold on the (dark) accent tone */
+  --c-surface-paper: 235 228 214; /* #ebe4d6 */
+  --c-stage: 23 19 13;            /* #17130d warm black */
+}
+
+/* ---------- Tones → role tokens ---------- */
+:root,
+:root[data-stage='ink'],
+[data-tone='ink'] {
+  --bg: rgb(var(--c-ink));
+  --fg: rgb(var(--c-paper));
+  --fg-muted: rgb(var(--c-paper) / 0.66);
+  --fg-subtle: rgb(var(--c-paper) / 0.42);
+  --hairline: rgb(var(--c-paper) / 0.12);
+  --surface: rgb(var(--c-paper) / 0.04);
+  --surface-hover: rgb(var(--c-paper) / 0.08);
+  --accent: rgb(var(--c-accent-soft));
+  --accent-2: rgb(var(--c-accent));
+  --on-accent: rgb(var(--c-ink));
+  --glow: rgb(var(--c-accent) / 0.18);
+}
+
+:root[data-stage='accent'],
+[data-tone='accent'] {
+  --bg: rgb(var(--c-stage));
+  --fg: rgb(var(--c-paper));
+  --fg-muted: rgb(var(--c-paper) / 0.78);
+  --fg-subtle: rgb(var(--c-paper) / 0.55);
+  --hairline: rgb(var(--c-paper) / 0.22);
+  --surface: rgb(var(--c-paper) / 0.08);
+  --surface-hover: rgb(var(--c-paper) / 0.14);
+  --accent: rgb(var(--c-accent-ink));
+  --accent-2: rgb(var(--c-accent-ink) / 0.8);
+  --on-accent: rgb(var(--c-paper));
+  --glow: rgb(var(--c-paper) / 0.14);
+}
+
+:root[data-stage='paper'],
+[data-tone='paper'] {
+  --bg: rgb(var(--c-paper));
+  --fg: rgb(var(--c-ink));
+  --fg-muted: rgb(var(--c-ink) / 0.66);
+  --fg-subtle: rgb(var(--c-ink) / 0.45);
+  --hairline: rgb(var(--c-ink) / 0.1);
+  --surface: rgb(var(--c-surface-paper));
+  --surface-hover: color-mix(in srgb, rgb(var(--c-surface-paper)), rgb(var(--c-ink)) 4%);
+  --accent: rgb(var(--c-accent-deep));
+  --accent-2: rgb(var(--c-accent));
+  --on-accent: rgb(var(--c-paper));
+  --glow: rgb(var(--c-accent) / 0.12);
+}
+
+/* A toned section paints its own background and text colour */
+[data-tone] {
+  background-color: var(--bg);
+  color: var(--fg);
 }
 
 /* ============================================
@@ -44,17 +115,16 @@ html {
 }
 
 body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  background-color: var(--bg);
+  color: var(--fg);
   font-family: var(--font-inter), system-ui, sans-serif;
   transition: background-color 0.5s ease, color 0.5s ease;
   overflow-x: hidden;
 }
 
-/* Custom selection color */
 ::selection {
-  background: var(--accent-teal);
-  color: #fff;
+  background: rgb(var(--c-accent));
+  color: rgb(var(--c-ink));
 }
 
 /* ============================================
@@ -76,198 +146,215 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
+  background: var(--bg);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--accent-teal);
+  background: var(--accent);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-blue);
+  background: var(--accent-2);
 }
 
 /* ============================================
-   Grid Background Pattern
-   ============================================ */
-.bg-fintech-grid {
-  background-image:
-    linear-gradient(var(--grid-color) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-  background-size: 60px 60px;
-}
-
-/* ============================================
-   Glass Morphism Utilities
+   Glass (hero badge)
    ============================================ */
 .glass {
-  background: var(--glass-bg);
+  background: color-mix(in srgb, var(--bg) 60%, transparent);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-}
-
-.glass-strong {
-  background: var(--glass-bg);
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--hairline);
 }
 
 /* ============================================
-   Glow Effects
+   Buttons
    ============================================ */
-.glow-teal {
-  box-shadow: 0 0 20px var(--glow-color), 0 0 60px var(--glow-color);
+
+/* Retro offset-shadow CTA (BookCallButton, contact submit). Hover uses
+   `translate` so it composes with any GSAP transform instead of
+   overriding it. */
+.btn-retro {
+  color: var(--accent);
+  border: 1.5px solid var(--accent-2);
+  background: color-mix(in srgb, var(--accent-2) 8%, transparent);
+  box-shadow: -4px 4px 0 0 var(--accent-2);
+  transition-property: color, border-color, background-color, box-shadow, translate, opacity;
+  transition-duration: 0.2s;
 }
 
-.glow-teal-strong {
-  box-shadow: 0 0 30px var(--glow-strong), 0 0 80px var(--glow-color);
+.btn-retro:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent-2) 16%, transparent);
+  box-shadow: -2px 2px 0 0 var(--accent-2);
+  translate: -2px 2px;
 }
 
-.text-glow {
-  text-shadow: 0 0 40px var(--glow-color);
+.btn-retro:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/* On the accent tone the accent colour is the deep ink/gold — the CTA
+   reads better in the paper colour there */
+[data-tone='accent'] .btn-retro {
+  color: var(--fg);
+  border-color: var(--fg);
+  box-shadow: -4px 4px 0 0 var(--fg);
+  background: color-mix(in srgb, var(--fg) 6%, transparent);
+}
+
+[data-tone='accent'] .btn-retro:hover:not(:disabled) {
+  box-shadow: -2px 2px 0 0 var(--fg);
+  background: color-mix(in srgb, var(--fg) 12%, transparent);
 }
 
 /* ============================================
-   Button Styles
+   Section Layout & Type
    ============================================ */
-.btn-primary {
-  @apply relative inline-flex items-center justify-center px-8 py-3.5 rounded-xl
-    font-semibold text-sm tracking-wide overflow-hidden transition-all duration-300;
-  background: linear-gradient(135deg, var(--accent-teal), var(--accent-blue));
-  color: #fff;
-}
+/* In @layer components so Tailwind utilities written next to these classes
+   (e.g. `heading-display leading-[1.3]`) override them — outside a layer,
+   these rules come after the utilities and silently win. */
+@layer components {
+  .section-padding {
+    @apply px-6 md:px-12 lg:px-24 py-24 md:py-36;
+  }
 
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 40px var(--glow-strong);
-}
+  /* Small uppercase label above a section heading */
+  .eyebrow {
+    @apply inline-flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.24em];
+    color: var(--fg-subtle);
+  }
 
-.btn-secondary {
-  @apply relative inline-flex items-center justify-center px-8 py-3.5 rounded-xl
-    font-semibold text-sm tracking-wide transition-all duration-300;
-  background: transparent;
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-}
+  .eyebrow::before {
+    content: '';
+    width: 2rem;
+    height: 1px;
+    background: currentColor;
+  }
 
-.btn-secondary:hover {
-  border-color: var(--accent-teal);
-  color: var(--accent-teal);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 40px var(--glow-color);
+  .section-subtitle {
+    @apply text-base md:text-lg max-w-2xl;
+    color: var(--fg-muted);
+  }
+
+  /* Block-pixel headlines: Doto at its heaviest with square dots (ROND 0),
+     so each letter is built from chunky, near-touching blocks — a
+     Tetris / LED-matrix feel. Monospaced and wide; never tighten the
+     tracking or neighbouring letters fuse. */
+  .heading-dot {
+    @apply font-dot font-black leading-[1] tracking-normal;
+    font-variation-settings: 'ROND' 0;
+  }
+
+  /* Hero headline — dot matrix, set large */
+  .heading-hero {
+    @apply heading-dot text-[2.3rem] sm:text-5xl md:text-6xl lg:text-[5.1rem];
+    /* Two stacked drop-shadows: a tight close shadow grounds the glyphs and
+       a softer wider one casts a halo beneath. `filter: drop-shadow` rather
+       than `text-shadow` because the headline uses `background-clip: text`,
+       and drop-shadow correctly traces the rendered glyph outline. */
+    filter:
+      drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45))
+      drop-shadow(0 14px 28px rgba(0, 0, 0, 0.55));
+  }
+
+  /* Section headlines: dot matrix */
+  .heading-section {
+    @apply heading-dot text-[2rem] leading-[1.05] md:text-5xl lg:text-6xl;
+  }
+
+  /* Display serif for longer display text (statements, quotes, card
+     titles). Instrument Serif ships one weight (400), so never bold it. */
+  .heading-display {
+    @apply font-display font-normal leading-[0.95] tracking-[-0.02em];
+  }
+
+  .counter-value {
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 /* ============================================
-   Section Styles
+   Form fields (contact) — underline style
    ============================================ */
-.section-padding {
-  @apply px-6 md:px-12 lg:px-24 py-24 md:py-32;
+@layer components {
+  .field {
+    @apply w-full bg-transparent py-3 text-base outline-none;
+    color: var(--fg);
+    border-bottom: 1px solid var(--hairline);
+    transition: border-color 0.3s ease;
+  }
+
+  .field::placeholder {
+    color: var(--fg-subtle);
+  }
+
+  .field:focus {
+    border-color: var(--fg);
+  }
 }
 
-.section-title {
-  @apply text-3xl md:text-5xl font-bold mb-4 tracking-tight;
-  color: var(--text-primary);
-}
-
-.section-subtitle {
-  @apply text-base md:text-lg max-w-2xl;
-  color: var(--text-secondary);
+/* Visible focus ring for keyboard users on custom controls */
+.focus-ring:focus-visible,
+.field:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 4px;
 }
 
 /* ============================================
-   Card Styles
+   Intro
    ============================================ */
-.fintech-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+/* Preloader skipped (seen this session / reduced motion) — see lib/intro.js */
+:root[data-intro='skip'] .preloader {
+  display: none;
 }
 
-.fintech-card:hover {
-  background: var(--bg-card-hover);
-  border-color: var(--accent-teal);
-  box-shadow: 0 0 30px var(--glow-color);
-  transform: translateY(-4px);
+/* Hero pre-entrance state. Applied from first paint when JS runs, so the
+   server-rendered headline doesn't flash before GSAP takes over; GSAP's
+   inline styles then own these properties. Without JS everything shows. */
+:root[data-js] .hero-letter {
+  transform: translateY(110%);
 }
 
-/* Metallic shine pseudo-element — hidden by default, sweeps on hover */
-.timeline-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    120deg,
-    transparent 0%,
-    transparent 30%,
-    rgba(255, 255, 255, 0) 30%,
-    rgba(255, 255, 255, 0.45) 50%,
-    rgba(255, 255, 255, 0) 70%,
-    transparent 70%,
-    transparent 100%
-  );
-  transform: translateX(-120%);
-  transition: none;
-  pointer-events: none;
-  z-index: 5;
-  border-radius: inherit;
-}
-
-.timeline-card:hover::after {
-  transform: translateX(120%);
-  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.timeline-card:hover {
-  background: #ede5ff !important;
-  border-color: #c4b5fd !important;
-  box-shadow: 0 8px 30px rgba(139, 92, 246, 0.12);
-  transform: translateY(-4px);
+:root[data-js] .hero-pre {
+  opacity: 0;
 }
 
 /* ============================================
-   Terminal Style
+   Custom cursor (see components/Cursor.jsx) — only on fine pointers
    ============================================ */
-.terminal {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  font-family: var(--font-mono), monospace;
-  overflow: hidden;
+.has-custom-cursor,
+.has-custom-cursor * {
+  cursor: none !important;
 }
 
-.terminal-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border-color);
+/* Ring: an inverted outline that reads on any background; in label mode a
+   solid accent square (normal blend, so the label stays legible) */
+.custom-cursor-ring {
+  border: 2px solid #fff;
+  mix-blend-mode: difference;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-.terminal-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
+.custom-cursor-ring[data-mode='label'] {
+  mix-blend-mode: normal;
+  border-color: transparent;
+  background: rgb(var(--c-accent));
 }
 
-.terminal-input {
-  @apply w-full bg-transparent border-none outline-none text-sm py-3 px-4;
-  color: var(--text-primary);
-  font-family: var(--font-mono), monospace;
+/* The navbar keeps a plain system pointer (the custom cursor fades out there) */
+.has-custom-cursor [data-native-cursor],
+.has-custom-cursor [data-native-cursor] * {
+  cursor: pointer !important;
 }
 
-.terminal-input::placeholder {
-  color: var(--text-muted);
-}
-
-/* ============================================
-   Animated Number Counter
-   ============================================ */
-.counter-value {
-  font-variant-numeric: tabular-nums;
+/* Keep the native text caret where people type */
+.has-custom-cursor input:not([type='radio']):not([type='checkbox']),
+.has-custom-cursor textarea,
+.has-custom-cursor select {
+  cursor: text !important;
 }
 
 /* ============================================
@@ -281,141 +368,32 @@ body {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  opacity: 0.015;
+  opacity: 0.035;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
   z-index: 9999;
 }
 
 /* ============================================
-   Hero backdrop — opaque vignette behind the WebGL layer (z-0), not an overlay on top.
+   Hero backdrop — ink field + soft accent aura (separate layer fades in).
    ============================================ */
 .hero-atmosphere {
   pointer-events: none;
-  /* Opaque stops only — a real lighter charcoal at center, not alpha over black */
-  background: radial-gradient(
-    ellipse 105% 100% at 50% 46%,
-    #1a1f2a 0%,
-    #14181f 22%,
-    #0e1014 45%,
-    #060708 68%,
-    #000000 100%
-  );
+  background: rgb(var(--c-ink));
 }
 
-/* ============================================
-   Responsive Typography Scale
-   ============================================ */
-.heading-hero {
-  @apply text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] tracking-tight;
-  /* Two stacked drop-shadows: a tight close shadow grounds the glyphs and
-     a softer wider one casts a halo beneath. `filter: drop-shadow` rather
-     than `text-shadow` because the headline uses `background-clip: text`,
-     and drop-shadow correctly traces the rendered glyph outline. */
-  filter:
-    drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45))
-    drop-shadow(0 14px 28px rgba(0, 0, 0, 0.55));
-}
-
-.heading-section {
-  @apply text-3xl md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight;
-}
-
-/* ============================================
-   Utility Animations
-   ============================================ */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes borderGlow {
-  0%, 100% {
-    border-color: var(--border-color);
-  }
-  50% {
-    border-color: var(--accent-teal);
-  }
-}
-
-/* ============================================
-   Purple Active — toggled on <html> after the
-   hero zoom transition. Background becomes
-   exactly #8b5cf6 (the purple dot colour).
-   ============================================ */
-.purple-active {
-  --bg-primary: #8b5cf6;
-  --bg-secondary: #7c3aed;
-  --bg-card: #7c3aed;
-  --bg-card-hover: #6d28d9;
-  --border-color: #a78bfa;
-  --text-primary: #ffffff;
-  --text-secondary: #ede9fe;
-  --text-muted: #c4b5fd;
-  --accent-teal: #4c1d95;
-  --accent-blue: #5b21b6;
-  --accent-purple: #6d28d9;
-  --glow-color: rgba(255, 255, 255, 0.15);
-  --glow-strong: rgba(255, 255, 255, 0.3);
-  --glass-bg: rgba(124, 58, 237, 0.5);
-  --glass-border: rgba(167, 139, 250, 0.6);
-  --particle-color: #c4b5fd;
-  --grid-color: rgba(255, 255, 255, 0.05);
-  --shadow-sm: 0 1px 3px rgba(80, 20, 160, 0.3);
-  --shadow-md: 0 4px 20px rgba(80, 20, 160, 0.35);
-  --shadow-lg: 0 10px 40px rgba(80, 20, 160, 0.4);
-}
-
-/* ============================================
-   White Active — toggled after the purple-to-white
-   transition, for Work and all subsequent sections.
-   ============================================ */
-.white-active {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8fafc;
-  --bg-card: #f5f0ff;
-  --bg-card-hover: #ede5ff;
-  --border-color: #e9d5ff;
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
-  --accent-teal: #7c3aed;
-  --accent-blue: #8b5cf6;
-  --accent-purple: #8b5cf6;
-  --glow-color: rgba(139, 92, 246, 0.1);
-  --glow-strong: rgba(139, 92, 246, 0.2);
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(226, 232, 240, 0.8);
-  --particle-color: #8b5cf6;
-  --grid-color: rgba(139, 92, 246, 0.04);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.1);
+.hero-glow {
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse 70% 55% at 50% 48%,
+      rgb(var(--c-accent) / 0.55) 0%,
+      rgb(var(--c-accent-deep) / 0.28) 28%,
+      rgb(var(--c-accent-deep) / 0.12) 48%,
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 95% 80% at 50% 52%,
+      rgb(var(--c-accent-soft) / 0.08) 0%,
+      transparent 55%
+    );
 }
