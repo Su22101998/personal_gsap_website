@@ -8,42 +8,55 @@ import { useTranslation } from '@/i18n'
 import { toneProps } from '@/lib/tone'
 import { clipReveal } from '@/lib/animation'
 import RevealText from '@/components/RevealText'
+import Link from 'next/link'
 import PlaceholderArt from '@/components/PlaceholderArt'
+import AuthorityJuiceArt from '@/components/concepts/authority-juice/PreviewArt'
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
 
 /* =====================================================
    Project card — shared by desktop and mobile
+   A project with an `href` (e.g. a concept page) becomes a link; `art`
+   swaps the placeholder for its own preview artwork.
    ===================================================== */
+const PROJECT_ART = {
+  'authority-juice': AuthorityJuiceArt,
+}
+
 function ProjectCard({ project, index, artRef }) {
+  const { t } = useTranslation()
+  const Art = PROJECT_ART[project.art]
+  const Wrapper = project.href ? Link : 'div'
+  const linkProps = project.href ? { href: project.href, 'data-cursor-label': t('selectedWork.viewProject') } : {}
+  const artClass = 'h-full w-full transition-[scale] duration-700 ease-out group-hover:scale-[1.04]'
+
   return (
     <article className="group flex flex-col">
-      <div className="relative overflow-hidden rounded-[22px]" style={{ height: 'min(52vh, 560px)' }}>
-        {/* Oversized art layer, shifted for parallax on desktop */}
-        <div ref={artRef} className="absolute inset-y-0 -left-[8%] -right-[8%]">
-          <PlaceholderArt
-            seed={index}
-            className="h-full w-full transition-[scale] duration-700 ease-out group-hover:scale-[1.04]"
-          />
+      <Wrapper {...linkProps} className="focus-ring flex flex-col">
+        <div className="relative overflow-hidden rounded-[22px]" style={{ height: 'min(52vh, 560px)' }}>
+          {/* Oversized art layer, shifted for parallax on desktop */}
+          <div ref={artRef} className="absolute inset-y-0 -left-[8%] -right-[8%]">
+            {Art ? <Art className={artClass} /> : <PlaceholderArt seed={index} className={artClass} />}
+          </div>
+          <span
+            className="absolute left-5 top-5 rounded-full px-3 py-1 text-[11px] uppercase tracking-[0.16em]"
+            style={{ background: 'rgb(var(--c-paper) / 0.14)', color: 'rgb(var(--c-paper))', backdropFilter: 'blur(8px)' }}
+          >
+            {project.concept ? `${t('selectedWork.concept')} · ${project.year}` : project.year}
+          </span>
         </div>
-        <span
-          className="absolute left-5 top-5 rounded-full px-3 py-1 text-[11px] uppercase tracking-[0.16em]"
-          style={{ background: 'rgb(var(--c-paper) / 0.14)', color: 'rgb(var(--c-paper))', backdropFilter: 'blur(8px)' }}
-        >
-          {project.year}
-        </span>
-      </div>
-      <div className="flex items-start justify-between gap-6 pt-5">
-        <div>
-          <p className="mb-1 text-[11px] uppercase tracking-[0.2em]" style={{ color: 'var(--fg-subtle)' }}>
-            {project.client}
+        <div className="flex items-start justify-between gap-6 pt-5">
+          <div>
+            <p className="mb-1 text-[11px] uppercase tracking-[0.2em]" style={{ color: 'var(--fg-subtle)' }}>
+              {project.client}
+            </p>
+            <h3 className="heading-display text-2xl md:text-3xl">{project.title}</h3>
+          </div>
+          <p className="shrink-0 pt-1 text-right text-xs leading-relaxed" style={{ color: 'var(--fg-muted)' }}>
+            {project.services.join(' · ')}
           </p>
-          <h3 className="heading-display text-2xl md:text-3xl">{project.title}</h3>
         </div>
-        <p className="shrink-0 pt-1 text-right text-xs leading-relaxed" style={{ color: 'var(--fg-muted)' }}>
-          {project.services.join(' · ')}
-        </p>
-      </div>
+      </Wrapper>
     </article>
   )
 }

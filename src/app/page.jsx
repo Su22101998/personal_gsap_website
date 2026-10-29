@@ -1,7 +1,9 @@
 'use client'
 
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { usePageTheme } from '@/hooks/usePageTheme'
+import { onIntroDone } from '@/lib/intro'
 import Navbar from '@/components/Navbar'
 import ScrollProgress from '@/components/ScrollProgress'
 import Hero from '@/components/Hero'
@@ -36,6 +38,22 @@ export default function HomePage() {
 
   // data-stage on <html> is driven only by the data-stage markers in the sections
   usePageTheme(mainRef)
+
+  // Arriving with a hash (e.g. /#work from a project page): the browser jumps
+  // before the pins have added their scroll distance, so it lands short.
+  // Re-scroll once the intro is done and ScrollTrigger has measured.
+  useEffect(
+    () =>
+      onIntroDone(() => {
+        const target = document.getElementById(decodeURIComponent(window.location.hash.slice(1)))
+        if (!target) return
+        requestAnimationFrame(() => {
+          ScrollTrigger.refresh()
+          window.scrollTo(0, target.getBoundingClientRect().top + window.scrollY)
+        })
+      }),
+    []
+  )
 
   return (
     <main ref={mainRef}>

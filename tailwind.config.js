@@ -30,6 +30,8 @@ module.exports = {
         sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
         display: ['var(--font-display)', 'Georgia', 'serif'],
         dot: ['var(--font-dot)', 'ui-monospace', 'monospace'],
+        // Authority Juice redesign numerals (loaded on /work/authority-juice only)
+        'aj-tight': ['var(--font-aj-tight)', 'var(--font-inter)', 'system-ui', 'sans-serif'],
       },
     },
   },

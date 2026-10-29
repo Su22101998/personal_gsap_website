@@ -108,7 +108,17 @@ const en = {
     prev: 'Previous project',
     next: 'Next project',
     goTo: 'Go to project',
+    concept: 'Concept',
     projects: [
+      {
+        client: 'Authority Juice',
+        title: 'Redesign concept for a B2B SEO agency',
+        year: '2026',
+        services: ['Concept', 'Web', 'Motion'],
+        href: '/work/authority-juice',
+        art: 'authority-juice',
+        concept: true,
+      },
       { client: 'Maison Verre', title: 'A glasshouse brand, rebuilt in light', year: '2026', services: ['Identity', 'Web'] },
       { client: 'Nordlicht', title: 'E-commerce for a Nordic outerwear label', year: '2026', services: ['Design', 'Development'] },
       { client: 'Atelier Sol', title: 'Portfolio site for an architecture practice', year: '2025', services: ['Web', 'Motion'] },
