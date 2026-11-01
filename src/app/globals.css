@@ -311,6 +311,14 @@ body {
   display: none;
 }
 
+/* RevealText line masks clip at the line box, which cuts descenders (g, y,
+   p) under tight leading. Extend each mask below the line, and pull the next
+   line back up by the same amount so the spacing is unchanged. */
+.reveal-line-mask {
+  padding-bottom: 0.18em;
+  margin-bottom: -0.18em;
+}
+
 /* Hero pre-entrance state. Applied from first paint when JS runs, so the
    server-rendered headline doesn't flash before GSAP takes over; GSAP's
    inline styles then own these properties. Without JS everything shows. */

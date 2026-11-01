@@ -23,21 +23,23 @@ export default function Services() {
     () => {
       const mm = gsap.matchMedia()
 
-      // Rows: divider draws across, then the content fades up
+      // Rows: divider draws across, then the content fades up — scrubbed to
+      // the scroll (with a little smoothing) so the reveal follows the row in
+      // from the bottom of the screen instead of popping in late on its own clock
       mm.add('(prefers-reduced-motion: no-preference)', () => {
         gsap.utils.toArray('.service-row').forEach((row) => {
           const tl = gsap.timeline({
-            scrollTrigger: { trigger: row, start: 'top 88%', once: true },
+            scrollTrigger: { trigger: row, start: 'top 98%', end: 'top 60%', scrub: 0.6 },
           })
           tl.from(row.querySelector('.service-rule'), {
             scaleX: 0,
             transformOrigin: 'left center',
-            duration: 1.2,
-            ease: 'expo.out',
+            duration: 1,
+            ease: 'power2.out',
           }).from(
             row.querySelectorAll('.service-fade'),
-            { y: 24, opacity: 0, duration: 0.9, ease: 'power3.out', stagger: 0.08 },
-            0.15
+            { y: 32, opacity: 0, duration: 0.7, ease: 'power2.out', stagger: 0.12 },
+            0.1
           )
         })
       })
@@ -66,7 +68,7 @@ export default function Services() {
                     {String(i + 1).padStart(2, '0')}
                   </span>
                   <h3 className="service-fade col-span-10 md:col-span-5">
-                    <span className="heading-display inline-block text-4xl transition-[translate,color] duration-500 ease-out group-hover:translate-x-4 md:text-6xl group-hover:[color:var(--accent)]">
+                    <span className="heading-display inline-block text-4xl transition-[transform,color] duration-500 ease-out group-hover:translate-x-4 md:text-6xl group-hover:[color:var(--accent)]">
                       {item.title}
                     </span>
                   </h3>

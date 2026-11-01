@@ -34,9 +34,9 @@ const doto = localFont({
 })
 
 export const metadata = {
-  title: 'Cyber Pears — Design & Development Studio',
+  title: 'Cyber Pears | Best Design & Development Studio',
   description:
-    'Cyber Pears designs and builds digital flagships for brands that refuse to be ordinary.',
+    'Cyber Pears builds hand-tailored, high-end websites to make brands impossible to forget.',
 }
 
 export default function RootLayout({ children }) {
