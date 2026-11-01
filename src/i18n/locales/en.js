@@ -65,7 +65,7 @@ const en = {
     // Set in italic, in the accent colour (must match a word exactly, incl. punctuation)
     accentWords: ['Ordinary.'],
     subtext:
-      'We create websites for brands that refuse to blend in.',
+      'We create website experiences for brands that refuse to blend in.',
     scrollLabel: 'Scroll',
   },
 
@@ -79,21 +79,21 @@ const en = {
   /* ── Services ── */
   services: {
     label: 'What we do',
-    heading: 'Three disciplines, one standard',
+    heading: 'Everything your brand needs to stand out',
     items: [
       {
         title: 'Brand Identity',
-        description: 'Naming, visual identity and the systems that keep a brand unmistakable.',
+        description: 'Your brand gets a clear look and a recognizable voice from our team.',
         tags: ['Strategy', 'Identity', 'Guidelines'],
       },
       {
         title: 'Digital Design',
-        description: 'Websites and products designed to be felt, not just seen.',
+        description: 'Every page is designed by hand around your story, never pulled from a template.',
         tags: ['Web', 'Product', 'Design systems'],
       },
       {
         title: 'Development',
-        description: 'Fast, accessible, maintainable builds — engineered to last.',
+        description: 'Our engineers turn each design into a fast, reliable website on any device.',
         tags: ['Next.js', 'Headless CMS', 'E-commerce'],
       },
     ],
@@ -103,7 +103,7 @@ const en = {
   selectedWork: {
     label: 'Selected work',
     heading: 'Recent flagships',
-    description: 'A few of the brands we have helped launch, rebuild and reimagine.',
+    description: 'Here is a look at some recent brand launches from our studio.',
     viewProject: 'View project',
     prev: 'Previous project',
     next: 'Next project',
@@ -113,21 +113,21 @@ const en = {
       { client: 'Nordlicht', title: 'E-commerce for a Nordic outerwear label', year: '2026', services: ['Design', 'Development'] },
       { client: 'Atelier Sol', title: 'Portfolio site for an architecture practice', year: '2025', services: ['Web', 'Motion'] },
       { client: 'Hollow & Pine', title: 'Launch campaign for a small-batch distillery', year: '2025', services: ['Identity', 'Motion'] },
-      { client: 'Kinoko Labs', title: 'Product marketing site with live 3D', year: '2025', services: ['Design', 'WebGL'] },
+      { client: 'Kinoko Labs', title: 'Product marketing site with live 3D', year: '2025', services: ['Design', 'WebGL']},
     ],
   },
 
   /* ── Featured case studies (stacked panels) ── */
   caseStudies: {
     label: 'Case studies',
-    heading: 'Work, in depth',
+    heading: 'A closer look at the results',
     cases: [
       {
         client: 'Maison Verre',
         category: 'Identity · Web · Motion',
         title: 'Turning a 90-year-old glassworks into a modern luxury house',
         description:
-          'A new identity, a cinematic e-commerce flagship and a motion language built around the way light moves through glass.',
+          'We gave this old glassworks a new identity and a cinematic online store. Its motion design borrows from the play of light inside glass.',
         stats: [
           { value: 3.2, suffix: '×', label: 'Online revenue' },
           { value: 48, suffix: '%', label: 'Longer sessions' },
@@ -137,9 +137,9 @@ const en = {
       {
         client: 'Nordlicht',
         category: 'Design · Development',
-        title: 'A storefront as calm and capable as the jackets it sells',
+        title: 'A calm, capable storefront for premium outerwear',
         description:
-          'Headless commerce with a product story told through scroll — from fabric to fjord — without slowing the path to checkout.',
+          'Shoppers scroll through the story of each jacket, from fabric to fjord. The trip to checkout still takes only a few quick steps.',
         stats: [
           { value: 62, suffix: '%', label: 'Conversion lift' },
           { value: 99, suffix: '', label: 'Lighthouse score' },
@@ -149,9 +149,9 @@ const en = {
       {
         client: 'Kinoko Labs',
         category: 'Design · WebGL',
-        title: 'Explaining an invisible product with a world you can touch',
+        title: 'Explaining an invisible product through a hands-on 3D world',
         description:
-          'A real-time 3D product tour that turns a complex platform into something visitors can explore at their own pace.',
+          'Our real-time 3D tour turns a complex platform into an easy place to explore. Visitors move through it at their own pace and stay much longer.',
         stats: [
           { value: 2.4, suffix: '×', label: 'Demo requests' },
           { value: 3, suffix: 'm', label: 'Avg. time on page' },
@@ -164,12 +164,12 @@ const en = {
   /* ── Process ── */
   process: {
     label: 'How we work',
-    heading: 'A process built for craft',
+    heading: 'How a project comes together',
     steps: [
-      { title: 'Discover', description: 'We learn the business, the audience and what success looks like.' },
-      { title: 'Design', description: 'Direction first, then every screen, state and transition.' },
-      { title: 'Build', description: 'Engineered in parallel with design, reviewed weekly with you.' },
-      { title: 'Launch', description: 'Performance, accessibility and a calm, well-rehearsed go-live.' },
+      { title: 'Discover', description: 'We start by getting to know your business and its customers.' },
+      { title: 'Design', description: 'Our designers then shape every screen around your brand story.' },
+      { title: 'Build', description: 'Engineering runs alongside design, with a review call every week.' },
+      { title: 'Launch', description: 'Your site goes live after careful testing for speed and accessibility.' },
     ],
   },
 
@@ -181,7 +181,7 @@ const en = {
     awards: [
       { name: 'Site of the Day', body: 'Placeholder awards body', year: '2026' },
       { name: 'Developer Award', body: 'Placeholder awards body', year: '2025' },
-      { name: 'Honourable Mention', body: 'Placeholder awards body', year: '2025' },
+      { name: 'Honorable Mention', body: 'Placeholder awards body', year: '2025' },
     ],
   },
 
@@ -190,9 +190,9 @@ const en = {
     label: 'Studio',
     heading: 'Small by design',
     body:
-      'Cyber Pears is a deliberately small team of designers and engineers. Every project is led by the people who do the work — no hand-offs, no account managers in between.',
+      'Cyber Pears is a small team of designers and engineers with an obsession for detail. The people doing the work lead every project from start to finish, with no account managers in between.',
     bodySecondary:
-      'We take on a handful of projects each year, so each one gets our full attention from the first workshop to the last line of code.',
+      'Taking on only a handful of projects each year gives every client our full attention.',
     stats: [
       { value: 7, suffix: '', label: 'Years in practice' },
       { value: 60, suffix: '+', label: 'Launches' },
@@ -208,17 +208,17 @@ const en = {
     goTo: 'Show testimonial',
     cursorNext: 'Next',
     items: [
-      { quote: 'Placeholder quote — they treated our brand like it was their own, and it shows in every detail.', name: 'Client name', role: 'Founder, Company' },
-      { quote: 'Placeholder quote — the most considered launch we have ever shipped, and the calmest.', name: 'Client name', role: 'Marketing Director, Company' },
-      { quote: 'Placeholder quote — every interaction moves exactly the way it should. People notice.', name: 'Client name', role: 'Head of Product, Company' },
+      { quote: 'Placeholder quote: Our customers now mention the website on almost every sales call.', name: 'Client name', role: 'Founder, Company' },
+      { quote: 'Placeholder quote: Our new site brought in a record number of leads during its first month.', name: 'Client name', role: 'Marketing Director, Company' },
+      { quote: 'Placeholder quote: Months after launch, people still bring up our site in meetings.', name: 'Client name', role: 'Head of Product, Company' },
     ],
   },
 
   /* ── Contact ── */
   contact: {
     label: 'Contact',
-    heading: 'Let’s make something rare.',
-    description: 'Tell us about your project. We reply within two working days.',
+    heading: 'Want a website people talk about?',
+    description: 'Send us a few details about your project for a reply within two business days.',
     emailLabel: 'Or write to us',
     email: 'hello@cyberpears.studio',
     fields: {
@@ -228,17 +228,23 @@ const en = {
       budget: 'Budget',
       message: 'Tell us about the project',
     },
-    budgets: ['Under $25k', '$25k–$75k', '$75k–$150k', '$150k+'],
-    submit: 'Send enquiry',
+    // `label` is what the form sends; `note` says what the budget covers
+    budgets: [
+      { label: 'Under $5k', note: 'Single-page website with pixel perfect design, transitions, and interactions' },
+      { label: '$5k–$15k', note: 'Multi-page website with pixel perfect design, transitions, and interactions' },
+      { label: '$15k–$25k', note: 'Website with 3D renders, stunning motion and interactions that users can explore and interact with' },
+      { label: '$25k+', note: 'Custom requirements/ extended, year-long collaboration' },
+    ],
+    submit: 'Send inquiry',
     sending: 'Sending…',
     successTitle: 'Thank you.',
-    successMessage: 'We’ve received your enquiry and will be in touch shortly.',
-    errorMessage: 'Something went wrong sending your message. Please email us directly.',
+    successMessage: 'Your inquiry reached us safely. Expect a reply from our team very soon.',
+    errorMessage: 'Sorry, your message didn’t go through. Please email us directly instead.',
   },
 
   /* ── Footer ── */
   footer: {
-    tagline: 'Design & development for brands that refuse to be ordinary.',
+    tagline: 'Hand-tailored, high-end websites for ambitious brands.',
     navLabel: 'Studio',
     socialLabel: 'Elsewhere',
     // Placeholder profiles — point these at real accounts before launch
