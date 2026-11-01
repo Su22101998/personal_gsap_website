@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { Fragment, useRef } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { SplitText } from 'gsap/SplitText'
@@ -90,7 +90,15 @@ export default function Manifesto() {
           // Breakpoint leading is needed too: text-5xl/6xl carry their own line-height
           className="heading-display text-[2.1rem] leading-[1.12] sm:text-5xl sm:leading-[1.1] md:text-6xl md:leading-[1.08] lg:text-[4.6rem]"
         >
-          {t('manifesto.statement')}
+          {/* "\n" in the copy = a deliberate line break */}
+          {t('manifesto.statement')
+            .split('\n')
+            .map((line, i) => (
+              <Fragment key={i}>
+                {i > 0 && <br />}
+                {line}
+              </Fragment>
+            ))}
         </p>
       </div>
     </section>

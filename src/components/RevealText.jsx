@@ -35,11 +35,13 @@ export default function RevealText({
         SplitText.create(ref.current, {
           type: 'lines',
           mask: 'lines',
+          // Masks get "reveal-line-mask", which leaves room for descenders (globals.css)
+          linesClass: 'reveal-line',
           autoSplit: true,
           // Returning the tween lets SplitText revert and rebuild it on re-split
           onSplit: (self) =>
             gsap.from(self.lines, {
-              yPercent: 110,
+              yPercent: 125, // clears the mask's extra descender room
               duration: 1.1,
               ease: 'expo.out',
               stagger: 0.08,

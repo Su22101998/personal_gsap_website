@@ -25,7 +25,7 @@ function Field({ id, label, children }) {
 }
 
 /**
- * Contact — "Start a project". Rises in as a card; posts to /api/contact
+ * Contact — "Get in touch". Rises in as a card; posts to /api/contact
  * (Resend). Includes a hidden honeypot field (`website`) for bots.
  */
 export default function Contact() {

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Image from 'next/image'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
@@ -17,7 +18,7 @@ const HIDE_AFTER_PX = 400
 /**
  * Minimal full-width navbar in the site's dot-matrix language: a dotted
  * wordmark, small uppercase links with a dot marking the active section,
- * the theme switch and the "Start a project" CTA. Transparent over the top
+ * the theme switch and the "Get in touch" CTA. Transparent over the top
  * of the page; once scrolled, clear "liquid glass" (blur only, no tint). Slides away while scrolling down and
  * returns on any scroll up (or when keyboard focus enters it). All colours
  * come from the stage/brand tokens. In-page links are plain anchors —
@@ -37,8 +38,9 @@ export default function Navbar() {
   const { t } = useTranslation()
 
   const NAV_LINKS = [
-    { label: t('nav.work'), href: '#work' },
+    { label: t('nav.manifesto'), href: '#manifesto' },
     { label: t('nav.services'), href: '#services' },
+    { label: t('nav.work'), href: '#work' },
     { label: t('nav.process'), href: '#process' },
     { label: t('nav.studio'), href: '#studio' },
   ]
@@ -135,7 +137,8 @@ export default function Navbar() {
           className="focus-ring flex items-center gap-2.5"
           style={{ color: 'var(--fg)' }}
         >
-          <span aria-hidden="true" className="h-2 w-2 rounded-full" style={{ background: 'var(--accent)' }} />
+          {/* Monogram — decorative, the wordmark beside it names the link */}
+          <Image src="/brand/cyber-pears-logo.png" alt="" width={368} height={265} priority className="h-[26px] w-auto shrink-0 md:h-8" />
           <span className="heading-dot text-lg md:text-xl">{t('nav.brand')}</span>
         </a>
 

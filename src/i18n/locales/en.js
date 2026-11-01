@@ -15,6 +15,7 @@
 const en = {
   /* ── Navbar ── */
   nav: {
+    manifesto: 'Manifesto',
     work: 'Work',
     services: 'Services',
     process: 'Process',
@@ -22,7 +23,7 @@ const en = {
     logo: 'CP',
     brand: 'Cyber Pears',
     toggleMenu: 'Toggle menu',
-    bookCall: 'Start a project',
+    bookCall: 'Get in touch',
   },
 
   /* ── Brand theme switch ── */
@@ -34,7 +35,7 @@ const en = {
 
   /* ── Primary CTA button ── */
   bookCallButton: {
-    label: 'Start a project',
+    label: 'Get in touch',
   },
 
   /* ── Preloader ── */
@@ -46,7 +47,7 @@ const en = {
 
   /* ── Scroll progress rail (keyed by section id) ── */
   progress: {
-    manifesto: 'Studio',
+    manifesto: 'Manifesto',
     services: 'Services',
     work: 'Work',
     cases: 'Case studies',
@@ -59,21 +60,20 @@ const en = {
 
   /* ── Hero ── */
   hero: {
-    badge: 'Now booking projects for early 2027',
     // "\n" marks a line break
-    headline: 'Websites that tell\nyour story.',
+    headline: 'Be Less Ordinary.',
     // Set in italic, in the accent colour (must match a word exactly, incl. punctuation)
-    accentWords: ['your', 'story.'],
+    accentWords: ['Ordinary.'],
     subtext:
-      'Cyber Pears designs and builds digital flagships for brands that refuse to be ordinary.',
+      'We create websites for brands that refuse to blend in.',
     scrollLabel: 'Scroll',
   },
 
   /* ── Manifesto ── */
   manifesto: {
-    label: 'The studio',
+    label: 'The manifesto',
     statement:
-      'We are a small studio for ambitious brands. We design with restraint, engineer with care, and obsess over the moments in between — the transitions, the timing, the feel.',
+      'Cyber Pears is for ambitious brands. We don\'t design with restraint, we build for brands who are obsessed with becoming extraordinary.\nNot everyone gets it.',
   },
 
   /* ── Services ── */
