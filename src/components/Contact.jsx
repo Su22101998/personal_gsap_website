@@ -76,9 +76,11 @@ export default function Contact() {
 
   return (
     <section ref={sectionRef} id="contact" {...toneProps('accent')} className="section-padding relative">
+      {/* The label sits above both columns, so the heading and the first
+          fields start on the same line */}
+      <p className="eyebrow mx-auto mb-6 flex max-w-6xl">{t('contact.label')}</p>
       <div className="mx-auto grid max-w-6xl gap-16 md:grid-cols-12">
         <div className="md:col-span-5">
-          <p className="eyebrow mb-6">{t('contact.label')}</p>
           <RevealText as="h2" className="heading-dot mb-8 text-4xl md:text-6xl lg:text-7xl">
             {t('contact.heading')}
           </RevealText>
@@ -117,21 +119,22 @@ export default function Contact() {
                 <legend className="mb-3 block text-[11px] uppercase tracking-[0.18em]" style={{ color: 'var(--fg-subtle)' }}>
                   {t('contact.fields.budget')}
                 </legend>
-                <div className="flex flex-wrap gap-2">
-                  {budgets.map((budget) => {
-                    const checked = form.budget === budget
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {budgets.map(({ label, note }) => {
+                    const checked = form.budget === label
                     return (
                       <label
-                        key={budget}
-                        className="cursor-pointer rounded-full px-4 py-2 text-sm transition-colors duration-300 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2"
+                        key={label}
+                        className="flex cursor-pointer flex-col gap-1 rounded-2xl px-4 py-3 transition-colors duration-300 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2"
                         style={{
                           border: '1px solid var(--hairline)',
                           background: checked ? 'var(--fg)' : 'transparent',
                           color: checked ? 'var(--bg)' : 'var(--fg)',
                         }}
                       >
-                        <input type="radio" name="budget" value={budget} checked={checked} onChange={update} className="sr-only" />
-                        {budget}
+                        <input type="radio" name="budget" value={label} checked={checked} onChange={update} className="sr-only" />
+                        <span className="text-sm font-medium">{label}</span>
+                        <span className="text-xs leading-snug opacity-70">{note}</span>
                       </label>
                     )
                   })}

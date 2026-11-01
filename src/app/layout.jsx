@@ -34,9 +34,20 @@ const doto = localFont({
 })
 
 export const metadata = {
+  // Absolute base for canonical and social-preview URLs
+  metadataBase: new URL('https://www.cyberpears.com'),
   title: 'Cyber Pears | Best Design & Development Studio',
   description:
     'Cyber Pears builds hand-tailored, high-end websites to make brands impossible to forget.',
+  alternates: { canonical: '/' },
+  robots: { index: true, follow: true },
+  openGraph: {
+    type: 'website',
+    url: '/',
+    siteName: 'Cyber Pears',
+    title: 'Cyber Pears | Best Design & Development Studio',
+    description: 'Cyber Pears builds hand-tailored, high-end websites to make brands impossible to forget.',
+  },
 }
 
 export default function RootLayout({ children }) {
