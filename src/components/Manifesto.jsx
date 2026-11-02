@@ -5,6 +5,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { SplitText } from 'gsap/SplitText'
 import { useGSAP } from '@gsap/react'
+import { useStaggeredGSAP } from '@/hooks/useStaggeredGSAP'
 import { useTranslation } from '@/i18n'
 import { toneProps } from '@/lib/tone'
 
@@ -21,7 +22,7 @@ export default function Manifesto() {
   const statementRef = useRef(null)
   const { t } = useTranslation()
 
-  useGSAP(
+  useStaggeredGSAP(
     () => {
       const section = sectionRef.current
       const mm = gsap.matchMedia()

@@ -4,6 +4,7 @@ import { useRef } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
+import { useStaggeredGSAP } from '@/hooks/useStaggeredGSAP'
 import { useTranslation } from '@/i18n'
 import { toneProps } from '@/lib/tone'
 
@@ -38,7 +39,7 @@ export default function Clients() {
   // Second row starts halfway through the list so the rows don't mirror
   const offsetNames = [...names.slice(names.length / 2), ...names.slice(0, names.length / 2)]
 
-  useGSAP(
+  useStaggeredGSAP(
     () => {
       const mm = gsap.matchMedia()
 

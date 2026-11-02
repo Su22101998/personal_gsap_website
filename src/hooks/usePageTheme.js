@@ -3,6 +3,7 @@
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
+import { useStaggeredGSAP } from '@/hooks/useStaggeredGSAP'
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
 
@@ -30,7 +31,7 @@ export function setPageStage(stage) {
  * sections have created their own (pinning) ScrollTriggers.
  */
 export function usePageTheme(scopeRef) {
-  useGSAP(
+  useStaggeredGSAP(
     () => {
       const mm = gsap.matchMedia()
 

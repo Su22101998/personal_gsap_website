@@ -5,6 +5,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { SplitText } from 'gsap/SplitText'
 import { useGSAP } from '@gsap/react'
+import { useStaggeredGSAP } from '@/hooks/useStaggeredGSAP'
 
 gsap.registerPlugin(ScrollTrigger, SplitText, useGSAP)
 
@@ -28,7 +29,7 @@ export default function RevealText({
 }) {
   const ref = useRef(null)
 
-  useGSAP(
+  useStaggeredGSAP(
     () => {
       const mm = gsap.matchMedia()
       mm.add('(prefers-reduced-motion: no-preference)', () => {

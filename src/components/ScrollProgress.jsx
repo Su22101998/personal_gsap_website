@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
+import { useStaggeredGSAP } from '@/hooks/useStaggeredGSAP'
 import { useTranslation } from '@/i18n'
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
@@ -25,7 +26,7 @@ export default function ScrollProgress() {
   const { t } = useTranslation()
 
   // Sections + their triggers
-  useGSAP(
+  useStaggeredGSAP(
     () => {
       const mm = gsap.matchMedia()
       mm.add('(min-width: 768px)', () => {

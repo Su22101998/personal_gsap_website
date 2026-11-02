@@ -4,6 +4,7 @@ import { useRef } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
+import { useStaggeredGSAP } from '@/hooks/useStaggeredGSAP'
 import { useTranslation } from '@/i18n'
 import { toneProps } from '@/lib/tone'
 import RevealText from '@/components/RevealText'
@@ -19,7 +20,7 @@ export default function Services() {
   const { t } = useTranslation()
   const items = t('services.items')
 
-  useGSAP(
+  useStaggeredGSAP(
     () => {
       const mm = gsap.matchMedia()
 
