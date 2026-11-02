@@ -4,6 +4,7 @@ import { useRef } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
+import { useStaggeredGSAP } from '@/hooks/useStaggeredGSAP'
 import { useTranslation } from '@/i18n'
 import { toneProps } from '@/lib/tone'
 import { bleedBackground } from '@/lib/animation'
@@ -29,7 +30,7 @@ export default function CaseStudies() {
   const { t } = useTranslation()
   const cases = t('caseStudies.cases')
 
-  useGSAP(
+  useStaggeredGSAP(
     () => {
       const section = sectionRef.current
       const mm = gsap.matchMedia()

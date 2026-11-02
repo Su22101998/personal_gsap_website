@@ -4,6 +4,7 @@ import { useRef, useEffect } from 'react'
 import * as THREE from 'three'
 import { useBrand } from '@/hooks/useBrand'
 import { onIntroDone } from '@/lib/intro'
+import { isSoftwareRenderer } from '@/lib/gpu'
 import { PLANET_PALETTES, createSharedUniforms, applyPalette, createGlobeMaterial } from './planetShaders'
 import { PLANETS, resolvePlanet } from './planets'
 
@@ -100,17 +101,6 @@ const LIGHT_FRAME_MS = 1000 / 30
 /** Average frame time that drops full → light, and light → still */
 const SLOW_FRAME_S = 1 / 45
 const VERY_SLOW_FRAME_S = 1 / 22
-
-/** True when WebGL runs in software (no GPU): every frame costs the CPU dearly */
-function isSoftwareRenderer(gl) {
-  try {
-    const ext = gl.getExtension('WEBGL_debug_renderer_info')
-    const name = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER)
-    return /swiftshader|llvmpipe|softpipe|software|basic render/i.test(String(name))
-  } catch {
-    return false
-  }
-}
 
 export default function OrbitScene({ zoomProgress, onNodesIntroComplete }) {
   const containerRef = useRef(null)
@@ -635,7 +625,9 @@ export default function OrbitScene({ zoomProgress, onNodesIntroComplete }) {
     document.addEventListener('visibilitychange', sync)
 
     // Compile the shaders now, behind the preloader, so the first visible
-    // frame doesn't stall
+    // frame doesn't stall. (Only GPU devices get here — the rest get the
+    // poster — so this is quick. compileAsync is avoided: in r170 it throws
+    // from a timer on some of this scene's materials.)
     renderer.compile(scene, camera)
 
     const stopWaitingForIntro = onIntroDone(() => {

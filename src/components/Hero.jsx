@@ -1,20 +1,14 @@
 'use client'
 
 import { useRef, useCallback } from 'react'
-import dynamic from 'next/dynamic'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
 import { useTranslation } from '@/i18n'
 import { isIntroDone, onIntroDone } from '@/lib/intro'
+import HeroScene from '@/components/three/HeroScene'
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
-
-// Dynamic import — Three.js cannot run during SSR
-const OrbitScene = dynamic(
-  () => import('@/components/three/OrbitScene'),
-  { ssr: false }
-)
 
 /**
  * Hero section — cinematic entry with the Three.js orbital scene.
@@ -242,7 +236,7 @@ export default function Hero() {
 
         {/* Three.js scene — above backdrop; nodes/lines render on top of the atmosphere */}
         <div className="absolute inset-0 z-[1]">
-          <OrbitScene
+          <HeroScene
             zoomProgress={zoomProgressRef}
             onNodesIntroComplete={onNodesIntroComplete}
           />

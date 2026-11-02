@@ -4,6 +4,7 @@ import { useRef, useEffect, useState, useCallback } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
+import { useStaggeredGSAP } from '@/hooks/useStaggeredGSAP'
 import { useTranslation } from '@/i18n'
 import { toneProps } from '@/lib/tone'
 import { clipReveal } from '@/lib/animation'
@@ -64,7 +65,7 @@ function DesktopWork({ projects }) {
   const { t } = useTranslation()
   const total = String(projects.length).padStart(2, '0')
 
-  useGSAP(
+  useStaggeredGSAP(
     () => {
       const mm = gsap.matchMedia()
 
@@ -322,7 +323,7 @@ export default function SelectedWork() {
   const { t } = useTranslation()
   const projects = t('selectedWork.projects')
 
-  useGSAP(
+  useStaggeredGSAP(
     () => {
       const mm = gsap.matchMedia()
       mm.add('(prefers-reduced-motion: no-preference)', () => {
