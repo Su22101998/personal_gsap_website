@@ -95,6 +95,23 @@ function buildNodeIntroOrder() {
 const INTRO_STAGGER_MS = 95
 const INTRO_DURATION_MS = 420
 
+/** Light mode draws at most this often (30 fps) */
+const LIGHT_FRAME_MS = 1000 / 30
+/** Average frame time that drops full → light, and light → still */
+const SLOW_FRAME_S = 1 / 45
+const VERY_SLOW_FRAME_S = 1 / 22
+
+/** True when WebGL runs in software (no GPU): every frame costs the CPU dearly */
+function isSoftwareRenderer(gl) {
+  try {
+    const ext = gl.getExtension('WEBGL_debug_renderer_info')
+    const name = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER)
+    return /swiftshader|llvmpipe|softpipe|software|basic render/i.test(String(name))
+  } catch {
+    return false
+  }
+}
+
 export default function OrbitScene({ zoomProgress, onNodesIntroComplete }) {
   const containerRef = useRef(null)
   const mouseRef = useRef({ x: 0, y: 0 })
@@ -127,11 +144,13 @@ export default function OrbitScene({ zoomProgress, onNodesIntroComplete }) {
 
     // WebGL can be disabled, unsupported, or out of contexts. Fail soft: the
     // CSS backdrop still renders, and the hero text entrance starts at once.
+    // Phones: dense screens hide the difference, so skip antialiasing and draw at 1×
+    const isMobile = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 768
     let renderer
     try {
       renderer = new THREE.WebGLRenderer({
         alpha: true,
-        antialias: true,
+        antialias: !isMobile,
         powerPreference: 'high-performance',
       })
     } catch (err) {
@@ -141,7 +160,14 @@ export default function OrbitScene({ zoomProgress, onNodesIntroComplete }) {
     }
     renderer.setClearColor(0x000000, 0)
     renderer.setSize(container.clientWidth, container.clientHeight)
-    renderer.setPixelRatio(MAX_PIXEL_RATIO)
+
+    // Quality adapts to the device: 'full', 'light' (1×, half the particles,
+    // 30 fps) or 'still' (a finished frame, redrawn only while the scroll zoom
+    // moves). Software WebGL and reduced motion start out still.
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    let quality = reduceMotion || isSoftwareRenderer(renderer.getContext()) ? 'still' : 'full'
+    let basePixelRatio = isMobile || quality === 'still' ? 1 : MAX_PIXEL_RATIO
+    renderer.setPixelRatio(basePixelRatio)
     container.appendChild(renderer.domElement)
 
     // --- Create Glow Texture ---
@@ -338,35 +364,70 @@ export default function OrbitScene({ zoomProgress, onNodesIntroComplete }) {
     let lowRes = false
     let lastFrameTime = performance.now()
     const clock = new THREE.Clock()
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
     // The intro (nodes popping in) is timed from when the page is revealed,
-    // i.e. when the preloader lifts — not from mount, which is behind it
+    // i.e. when the preloader lifts — and nothing is drawn before then
     let introStarted = false
-    const stopWaitingForIntro = onIntroDone(() => {
-      clock.start()
-      introStarted = true
-    })
+    let drawnStill = false
+    let lastStillZoom = -1
+
+    // Frame-time sampling for the quality steps (skips the first frames,
+    // which pay for shader warm-up)
+    let sampledFrames = 0
+    let sampledTime = 0
+    const sampleFrame = (delta) => {
+      if (quality === 'still' || ++sampledFrames <= 20) return
+      sampledTime += delta
+      if (sampledFrames < 80) return
+      const average = sampledTime / (sampledFrames - 20)
+      sampledFrames = 0
+      sampledTime = 0
+      if (quality === 'full' && average > SLOW_FRAME_S) {
+        quality = 'light'
+        basePixelRatio = 1
+        renderer.setPixelRatio(1)
+        particleGeometry.setDrawRange(0, PARTICLE_COUNT / 2)
+        ambientGeometry.setDrawRange(0, ambientCount / 2)
+      } else if (quality === 'light' && average > VERY_SLOW_FRAME_S) {
+        quality = 'still'
+      }
+    }
 
     const animate = () => {
       if (!running) return
       animationId = requestAnimationFrame(animate)
-      const clockTime = introStarted ? clock.getElapsedTime() : 0
       const now = performance.now()
-      const delta = (now - lastFrameTime) / 1000
-      lastFrameTime = now
-      // Reduced motion: no ambient motion (orbit, float, spin, pulse) and the
-      // intro is shown already complete
-      const elapsed = reduceMotion ? 0 : clockTime
-      const elapsedMs = reduceMotion ? introTotalMs : clockTime * 1000
+      const zoomValue = zoomProgress?.current?.value ?? 0 // scroll-driven zoom (0 → 1)
+      const still = quality === 'still'
 
-      // Scroll-driven zoom progress (0 → 1)
-      const zoomValue = zoomProgress?.current?.value ?? 0
-      const mouseInfluence = reduceMotion ? 0 : 1 - zoomValue
+      if (still) {
+        // Draw once, then only while the zoom moves (at most ~10 fps)
+        if (drawnStill && Math.abs(zoomValue - lastStillZoom) < 0.002) return
+        if (drawnStill && now - lastFrameTime < 100) return
+        lastStillZoom = zoomValue
+        drawnStill = true
+      } else if (quality === 'light' && now - lastFrameTime < LIGHT_FRAME_MS - 2) {
+        return
+      }
+
+      const clockTime = clock.getElapsedTime()
+      const delta = Math.min((now - lastFrameTime) / 1000, 0.1)
+      lastFrameTime = now
+      sampleFrame(delta)
+      // Per-frame easing written for 60 fps; scaled so motion keeps the same
+      // speed at any frame rate
+      const frameScale = Math.min(delta * 60, 4)
+      const ease = (k) => 1 - Math.pow(1 - k, frameScale)
+
+      // Still (reduced motion / no GPU): no ambient motion (orbit, float, spin,
+      // pulse) and the intro is shown already complete
+      const elapsed = still ? 0 : clockTime
+      const elapsedMs = still ? introTotalMs : clockTime * 1000
+      const mouseInfluence = still ? 0 : 1 - zoomValue
 
       // Camera follows mouse, but influence fades as we zoom in
-      camera.position.x += (mouseRef.current.x * 1.5 * mouseInfluence - camera.position.x) * 0.02
-      camera.position.y += (mouseRef.current.y * 1.0 * mouseInfluence - camera.position.y) * 0.02
+      const cameraEase = ease(0.02)
+      camera.position.x += (mouseRef.current.x * 1.5 * mouseInfluence - camera.position.x) * cameraEase
+      camera.position.y += (mouseRef.current.y * 1.0 * mouseInfluence - camera.position.y) * cameraEase
 
       // Zoom the camera toward the planet, stopping just above its surface
       // (the hero's stage overlay takes over from there)
@@ -379,7 +440,7 @@ export default function OrbitScene({ zoomProgress, onNodesIntroComplete }) {
       const wantLowRes = zoomValue > (lowRes ? 0.5 : 0.55)
       if (wantLowRes !== lowRes) {
         lowRes = wantLowRes
-        renderer.setPixelRatio(lowRes ? 1 : MAX_PIXEL_RATIO)
+        renderer.setPixelRatio(lowRes ? 1 : basePixelRatio)
       }
       const hiddenByOverlay = zoomValue > 0.92
 
@@ -390,7 +451,7 @@ export default function OrbitScene({ zoomProgress, onNodesIntroComplete }) {
         delta,
         zoom: zoomValue,
         intro: introEaseForNode(CENTRAL_NODE_INDEX, elapsedMs),
-        reduceMotion,
+        reduceMotion: still,
       })
 
       camera.lookAt(0, 0, 0)
@@ -414,6 +475,10 @@ export default function OrbitScene({ zoomProgress, onNodesIntroComplete }) {
       raycaster.setFromCamera(mouseVec, camera)
       const didHit = raycaster.ray.intersectPlane(repulsionPlane, hitPoint)
       if (didHit) mouseWorld.copy(hitPoint)
+
+      const repulsionEase = ease(REPULSION_LERP)
+      const glowInEase = ease(GLOW_LERP_IN)
+      const glowOutEase = ease(GLOW_LERP_OUT)
 
       // Animate nodes — orbital revolution + gentle floating + ripple repulsion
       nodeMeshes.forEach((n, i) => {
@@ -451,17 +516,17 @@ export default function OrbitScene({ zoomProgress, onNodesIntroComplete }) {
             const dirX = dx / dist
             const dirY = dy / dist
             // Lerp toward target repulsion
-            offset.x += (dirX * strength - offset.x) * REPULSION_LERP
-            offset.y += (dirY * strength - offset.y) * REPULSION_LERP
+            offset.x += (dirX * strength - offset.x) * repulsionEase
+            offset.y += (dirY * strength - offset.y) * repulsionEase
           } else {
             // Spring back to origin
-            offset.x += (0 - offset.x) * REPULSION_LERP
-            offset.y += (0 - offset.y) * REPULSION_LERP
+            offset.x += (0 - offset.x) * repulsionEase
+            offset.y += (0 - offset.y) * repulsionEase
           }
         } else if (i !== centralIdx) {
           // No hit — ease back
-          offset.x += (0 - offset.x) * REPULSION_LERP
-          offset.y += (0 - offset.y) * REPULSION_LERP
+          offset.x += (0 - offset.x) * repulsionEase
+          offset.y += (0 - offset.y) * repulsionEase
         }
 
         n.mesh.position.x = baseX + offset.x
@@ -480,10 +545,10 @@ export default function OrbitScene({ zoomProgress, onNodesIntroComplete }) {
           const targetGlow = gDist < GLOW_TOUCH_RADIUS
             ? Math.pow(1 - gDist / GLOW_TOUCH_RADIUS, 1.5)
             : 0
-          const lerpSpeed = targetGlow > glowIntensity[i] ? GLOW_LERP_IN : GLOW_LERP_OUT
+          const lerpSpeed = targetGlow > glowIntensity[i] ? glowInEase : glowOutEase
           glowIntensity[i] += (targetGlow - glowIntensity[i]) * lerpSpeed
         } else if (i !== centralIdx) {
-          glowIntensity[i] += (0 - glowIntensity[i]) * GLOW_LERP_OUT
+          glowIntensity[i] += (0 - glowIntensity[i]) * glowOutEase
         }
 
         if (i === centralIdx) {
@@ -523,7 +588,7 @@ export default function OrbitScene({ zoomProgress, onNodesIntroComplete }) {
       // Animate flowing particles along connections
       const posArray = particles.geometry.attributes.position.array
       for (let i = 0; i < PARTICLE_COUNT; i++) {
-        particleProgress[i] += reduceMotion ? 0 : particleSpeeds[i]
+        particleProgress[i] += still ? 0 : particleSpeeds[i] * frameScale
         if (particleProgress[i] > 1) {
           particleProgress[i] = 0
           particleConnectionIdx[i] = Math.floor(Math.random() * CONNECTIONS.length)
@@ -550,6 +615,7 @@ export default function OrbitScene({ zoomProgress, onNodesIntroComplete }) {
     const start = () => {
       if (running) return
       running = true
+      lastFrameTime = performance.now()
       animationId = requestAnimationFrame(animate)
     }
     const stop = () => {
@@ -557,20 +623,33 @@ export default function OrbitScene({ zoomProgress, onNodesIntroComplete }) {
       cancelAnimationFrame(animationId)
     }
 
-    // Only render while the hero is on screen — saves GPU/battery for the
-    // rest of the visit once the user has scrolled past it.
+    // Only draw when someone can see it: after the preloader has lifted,
+    // while the hero is on screen, and while the tab is visible
+    let inView = true
+    const sync = () => (introStarted && inView && !document.hidden ? start() : stop())
     const visibilityObserver = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) start()
-      else stop()
+      inView = entry.isIntersecting
+      sync()
     })
     visibilityObserver.observe(container)
-    start()
+    document.addEventListener('visibilitychange', sync)
+
+    // Compile the shaders now, behind the preloader, so the first visible
+    // frame doesn't stall
+    renderer.compile(scene, camera)
+
+    const stopWaitingForIntro = onIntroDone(() => {
+      clock.start()
+      introStarted = true
+      sync()
+    })
 
     // --- Resize Handler ---
     const handleResize = () => {
       camera.aspect = container.clientWidth / container.clientHeight
       camera.updateProjectionMatrix()
       renderer.setSize(container.clientWidth, container.clientHeight)
+      drawnStill = false // a still frame needs redrawing at the new size
     }
     window.addEventListener('resize', handleResize)
 
@@ -581,6 +660,7 @@ export default function OrbitScene({ zoomProgress, onNodesIntroComplete }) {
       applyBrandRef.current = null
       stopWaitingForIntro()
       visibilityObserver.disconnect()
+      document.removeEventListener('visibilitychange', sync)
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('resize', handleResize)
       // Free every geometry/material on the GPU, not just a few

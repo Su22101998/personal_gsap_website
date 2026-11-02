@@ -9,8 +9,9 @@ import { INTRO_SEEN_KEY, markIntroDone } from '@/lib/intro'
 
 gsap.registerPlugin(SplitText, useGSAP)
 
-// Never hold visitors longer than this waiting for fonts/images
-const MAX_WAIT_MS = 5000
+// Never hold visitors longer than this waiting for fonts/images (the intro
+// itself takes ~1.8s; slow images can finish loading behind the page)
+const MAX_WAIT_MS = 2500
 
 /** Resolves once web fonts and the window load event are done (or after MAX_WAIT_MS). */
 function pageReady() {
