@@ -47,7 +47,11 @@ export default function SmoothScroll({ children }) {
       if (!el) return
       e.preventDefault()
       const spacer = el.parentElement?.classList.contains('pin-spacer') ? el.parentElement : null
-      lenis.scrollTo(spacer || el)
+      // Pass an exact position measured against the real scroll: given an
+      // element, Lenis offsets it by its own animated scroll, which drifts
+      // from the real one mid-scroll and sends the page to the wrong place
+      const y = (spacer || el).getBoundingClientRect().top + window.scrollY
+      lenis.scrollTo(Math.max(0, y))
       history.pushState(null, '', `#${id}`)
     }
     document.addEventListener('click', onAnchorClick)
