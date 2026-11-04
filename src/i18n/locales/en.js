@@ -230,10 +230,10 @@ const en = {
     },
     // `label` is what the form sends; `note` says what the budget covers
     budgets: [
-      { label: 'Under $5k', note: 'Single-page website with pixel perfect design, transitions, and interactions' },
-      { label: '$5k–$15k', note: 'Multi-page website with pixel perfect design, transitions, and interactions' },
-      { label: '$15k–$25k', note: 'Website with 3D renders, stunning motion and interactions that users can explore and interact with' },
-      { label: '$25k+', note: 'Custom requirements/ extended, year-long collaboration' },
+      { label: 'Under $2k', note: 'Single-page website with pixel perfect design, transitions, and interactions' },
+      { label: '$2k–$5k', note: 'Multi-page website with pixel perfect design, transitions, and interactions' },
+      { label: '$5k–$15k', note: 'Website with 3D renders, stunning motion and interactions that users can explore and interact with' },
+      { label: '$15k+', note: 'Custom requirements/ extended, year-long collaboration' },
     ],
     submit: 'Send inquiry',
     sending: 'Sending…',

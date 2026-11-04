@@ -25,6 +25,8 @@ module.exports = {
         hairline: 'var(--hairline)',
         surface: 'var(--surface)',
         accent: 'var(--accent)',
+        // Ross Simmonds concept: switchable accent (see concepts/ross/Shell.jsx)
+        'rs-accent': 'rgb(var(--rs-accent-rgb) / <alpha-value>)',
       },
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
