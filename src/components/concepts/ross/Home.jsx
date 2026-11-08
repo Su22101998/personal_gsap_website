@@ -3,14 +3,15 @@
 import { useRef, useState } from 'react'
 import Image from 'next/image'
 import gsap from 'gsap'
+import { Draggable } from 'gsap/Draggable'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
 import { RLink } from './Shell'
 import Book3D from './Book3D'
-import { Count, Endorsers, Newsletter, SplitHeading, reduce, useRise } from './shared'
-import { channels, featuredIn, formatDate, keynotes, podcast, posts, proof, waysIn } from './data'
+import { Count, Endorsers, Logo, Newsletter, SplitHeading, reduce, useRise } from './shared'
+import { channels, featuredIn, formatDate, keynotes, podcast, posts, proof, shoutouts, waysIn } from './data'
 
-gsap.registerPlugin(ScrollTrigger, useGSAP)
+gsap.registerPlugin(Draggable, ScrollTrigger, useGSAP)
 
 const IMG = '/work/ross-simmonds/'
 
@@ -30,10 +31,10 @@ function Hero() {
   )
 
   return (
-    <section ref={ref} className="relative overflow-hidden px-5 pb-16 pt-14 md:px-8 md:pb-24 md:pt-20">
+    <section ref={ref} className="relative overflow-hidden px-5 pb-10 pt-14 md:px-8 md:pb-12 md:pt-20">
       <div className="mx-auto grid max-w-[1400px] items-end gap-10 lg:grid-cols-[1.25fr_1fr]">
         <div>
-          <p className="rs-label rs-hero-fade mb-8">Marketer · Speaker · Founder · Author</p>
+          <p className="rs-label rs-hero-fade mb-8">Founder · Marketer · Speaker · Author · Investor</p>
           {/* Preserves the live homepage H1 */}
           <SplitHeading as="h1" immediate className="rs-display text-[clamp(3rem,8.2vw,8.4rem)] leading-[0.9]">
             New school technology. <span className="rs-serif text-rs-accent">Old school storytelling.</span>
@@ -58,9 +59,10 @@ function Hero() {
         </div>
       </div>
 
-      <dl className="mx-auto mt-16 grid max-w-[1400px] grid-cols-2 gap-y-8 border-t border-white/10 pt-8 md:grid-cols-4">
+      {/* Equal space above and below (the section's bottom padding), so the stats sit centred between the rules */}
+      <dl className="mx-auto mt-16 grid max-w-[1400px] grid-cols-2 gap-y-8 border-t border-white/10 pt-10 md:grid-cols-4 md:pt-12">
         {proof.map((p) => (
-          <div key={p.label} className="rs-hero-fade flex flex-col-reverse">
+          <div key={p.label} className="rs-hero-fade flex flex-col-reverse items-center justify-end text-center">
             <dt className="rs-label mt-2">{p.label}</dt>
             <dd className="rs-display text-5xl md:text-6xl">
               <Count value={p.value} prefix={p.prefix} suffix={p.suffix} />
@@ -200,17 +202,118 @@ function Distribution() {
 
 function Press() {
   return (
-    <section className="overflow-hidden border-t border-white/10 py-10" aria-label="Featured in">
-      <div className="rs-marquee flex w-max gap-20">
+    <section className="overflow-hidden border-t border-white/10 py-12" aria-label="Featured in">
+      <div className="rs-marquee flex w-max gap-24">
         {[0, 1].map((k) => (
-          <div key={k} className="flex shrink-0 items-center gap-20" aria-hidden={k === 1}>
+          <div key={k} className="flex shrink-0 items-center gap-24" aria-hidden={k === 1}>
             {[...featuredIn, ...featuredIn].map((f, i) => (
-              <span key={i} className="rs-display text-[clamp(1.8rem,3.4vw,3rem)] text-white/30">
-                {f}
-              </span>
+              <Logo key={i} id={f} size={34} className="opacity-45 transition-opacity duration-300 hover:opacity-100" />
             ))}
           </div>
         ))}
+      </div>
+    </section>
+  )
+}
+
+/* ---------- Shoutouts: notes stuck to the wall, free to drag around ---------- */
+
+// The resting layout on desktop: three notes across the top, two tucked in
+// below and overlapping them. Each has a tilt, a drop from the top of its row
+// and a stacking order; the second note is the orange one
+const NOTES = [
+  { tilt: -3.5, mt: '0px', z: 3 },
+  { tilt: 3, mt: '64px', z: 5 },
+  { tilt: -2.5, mt: '16px', z: 3 },
+  { tilt: 3, mt: '-50px', z: 1 },
+  { tilt: -3, mt: '-24px', z: 2 },
+]
+
+function Shoutouts() {
+  const ref = useRef(null)
+  useGSAP(
+    () => {
+      const notes = gsap.utils.toArray('.rs-note')
+      if (!reduce()) {
+        gsap.from(notes, {
+          y: 120,
+          scale: 0.6,
+          opacity: 0,
+          duration: 1,
+          ease: 'back.out(1.7)',
+          stagger: { each: 0.09, from: 'random' },
+          scrollTrigger: { trigger: ref.current, start: 'top 75%', once: true },
+        })
+      }
+      // Drag them around with a mouse; touch keeps its scroll
+      const mm = gsap.matchMedia()
+      mm.add('(pointer: fine)', () => {
+        // The note you pick up comes to the front. Raise its <li>: the rise-in
+        // transform makes each one its own stacking context
+        let top = 5
+        const d = Draggable.create('.rs-note-drag', {
+          bounds: ref.current,
+          zIndexBoost: false,
+          cursor: 'grab',
+          activeCursor: 'grabbing',
+          onPress() {
+            gsap.set(this.target.parentNode, { zIndex: ++top })
+          },
+        })
+        return () => d.forEach((x) => x.kill())
+      })
+    },
+    { scope: ref }
+  )
+
+  return (
+    <section ref={ref} className="relative overflow-hidden border-t border-white/10 px-5 py-24 md:px-8 md:py-32">
+      <div className="mx-auto max-w-[1400px]">
+        <div className="mb-14 flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <p className="rs-label mb-6">Voices of approval</p>
+            <SplitHeading className="rs-display rs-to-baseline text-[clamp(2.4rem,5.5vw,5rem)] leading-[0.95]">
+              What people <span className="rs-serif text-rs-accent">have to say.</span>
+            </SplitHeading>
+          </div>
+          <p className="rs-mono hidden items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-white/45 [@media(pointer:fine)]:flex">
+            <span className="text-rs-accent">✦</span> Drag the notes around
+          </p>
+        </div>
+        <ul className="flex flex-wrap items-start justify-center gap-6 md:gap-8 lg:gap-0">
+          {shoutouts.map((q, i) => {
+            const hot = i === 1
+            return (
+              // Three layers so nothing fights: the li rises in, the middle drags, the figure tilts
+              <li
+                key={q.name}
+                style={{ '--mt': NOTES[i].mt, zIndex: NOTES[i].z }}
+                className={`rs-note relative w-full sm:w-[calc(50%-12px)] lg:mt-[var(--mt)] lg:w-[30%] ${i % 2 ? 'sm:mt-10' : ''}`}
+              >
+                <div className="rs-note-drag">
+                  <figure
+                    style={{ '--tilt': `${NOTES[i].tilt}deg` }}
+                    className={`flex flex-col gap-6 rounded-[18px] p-7 shadow-[0_30px_60px_-30px_rgb(0_0_0/0.9)] transition-transform duration-500 [transform:rotate(var(--tilt))] [transition-timing-function:cubic-bezier(0.34,1.8,0.64,1)] hover:[transform:rotate(0deg)_scale(1.03)] md:p-8 ${
+                      hot ? 'bg-rs-accent text-[#0a0a0a]' : 'border border-white/10 bg-[#161616]'
+                    }`}
+                  >
+                    <span className={`rs-display text-[4.5rem] leading-[0.5] ${hot ? 'text-[#0a0a0a]' : 'text-rs-accent'}`} aria-hidden="true">
+                      &ldquo;
+                    </span>
+                    <blockquote className={`rs-display text-[clamp(1.25rem,1.9vw,1.6rem)] leading-[1.2] ${hot ? '' : 'text-[#f2f0eb]'}`}>{q.quote}</blockquote>
+                    <figcaption className="flex items-center gap-3">
+                      <Image src={`${IMG}people/${q.photo}.jpg`} alt="" width={44} height={44} draggable={false} className="h-11 w-11 rounded-full object-cover" />
+                      <span>
+                        <span className="block text-[15px] font-medium">{q.name}</span>
+                        <span className={`block text-[13px] ${hot ? 'text-black/65' : 'text-white/50'}`}>{q.role}</span>
+                      </span>
+                    </figcaption>
+                  </figure>
+                </div>
+              </li>
+            )
+          })}
+        </ul>
       </div>
     </section>
   )
@@ -280,7 +383,7 @@ function Book() {
       <div className="pointer-events-none absolute left-1/2 top-1/2 h-[60vw] w-[60vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-rs-accent opacity-[0.12] blur-[120px]" aria-hidden="true" />
       <div className="relative mx-auto grid max-w-[1400px] items-center gap-16 lg:grid-cols-2">
         <div>
-          <p className="rs-label mb-6">The book · #1 Amazon bestseller</p>
+          <p className="rs-label mb-6">#1 Amazon bestseller</p>
           <SplitHeading className="rs-display text-[clamp(2.8rem,6vw,5.6rem)] leading-[0.92]">
             Create once. <span className="rs-serif text-rs-accent">Distribute forever.</span>
           </SplitHeading>
@@ -304,51 +407,63 @@ function Book() {
   )
 }
 
-/* ---------- Keynotes preview (photo follows the cursor) ---------- */
+/* ---------- Keynotes preview (photo beside the hovered title) ---------- */
 
 function KeynotesPreview() {
   const ref = useRef(null)
   const [img, setImg] = useState(keynotes.talks[0].img)
 
   const { contextSafe } = useGSAP({ scope: ref })
-  const follow = useRef(null)
+  const photo = useRef(null)
   const ensure = () => {
-    if (!follow.current) {
+    if (!photo.current) {
       const el = ref.current.querySelector('.rs-follow')
-      follow.current = { el, x: gsap.quickTo(el, 'x', { duration: 0.6, ease: 'power3' }), y: gsap.quickTo(el, 'y', { duration: 0.6, ease: 'power3' }) }
+      photo.current = { el, on: false, x: gsap.quickTo(el, 'x', { duration: 0.5, ease: 'power3' }), y: gsap.quickTo(el, 'y', { duration: 0.5, ease: 'power3' }) }
     }
-    return follow.current
+    return photo.current
   }
-  const onMove = contextSafe((e) => {
-    if (reduce()) return
-    const f = ensure()
-    const r = ref.current.getBoundingClientRect()
-    f.x(e.clientX - r.left - 160)
-    f.y(e.clientY - r.top - 110)
-  })
-  const show = contextSafe((on) => {
-    if (reduce()) return
-    gsap.to(ensure().el, { opacity: on ? 1 : 0, scale: on ? 1 : 0.85, duration: 0.4, ease: 'power3.out' })
+  // Line the photo up with the start of the hovered title, above it when
+  // there's room on screen and below it otherwise
+  const show = contextSafe((row) => {
+    const p = ensure()
+    if (row) {
+      const r = ref.current.getBoundingClientRect()
+      const t = row.querySelector('.rs-k-title').getBoundingClientRect()
+      const gap = 14
+      const above = t.top - p.el.offsetHeight - gap > 90 // clear of the sticky nav
+      const x = t.left - r.left
+      const y = (above ? t.top - p.el.offsetHeight - gap : t.bottom + gap) - r.top
+      if (!p.on || reduce()) gsap.set(p.el, { x, y })
+      else (p.x(x), p.y(y))
+    }
+    p.on = !!row
+    gsap.to(p.el, { opacity: row ? 1 : 0, scale: row ? 1 : 0.9, duration: reduce() ? 0 : 0.35, ease: 'power3.out', overwrite: 'auto' })
   })
 
   return (
-    <section ref={ref} onPointerMove={onMove} onPointerLeave={() => show(false)} className="relative border-t border-white/10 px-5 py-24 md:px-8 md:py-32">
+    <section ref={ref} className="relative border-t border-white/10 px-5 py-24 md:px-8 md:py-32">
       <div className="mx-auto max-w-[1400px]">
         <div className="mb-12 flex flex-wrap items-end justify-between gap-6">
           <div>
             <p className="rs-label mb-6">Keynote speaker</p>
-            <SplitHeading className="rs-display text-[clamp(2.4rem,5.5vw,5rem)] leading-[0.95]">Talks that leave rooms with a plan.</SplitHeading>
+            <SplitHeading className="rs-display rs-to-baseline text-[clamp(2.4rem,5.5vw,5rem)] leading-[0.95]">Talks that leave rooms with a plan.</SplitHeading>
           </div>
           <RLink path="/keynotes/" label="Keynotes" className="rs-btn rs-btn-ghost">
             See all keynotes →
           </RLink>
         </div>
-        <ol className="border-t border-white/15" onPointerEnter={() => show(true)}>
+        <ol className="border-t border-white/15" onPointerLeave={() => show(null)}>
           {keynotes.talks.map((t, i) => (
-            <li key={t.title} className="border-b border-white/15" onPointerEnter={() => setImg(t.img)}>
+            <li
+              key={t.title}
+              className="border-b border-white/15"
+              onPointerEnter={(e) => (setImg(t.img), show(e.currentTarget))}
+              onFocus={(e) => (setImg(t.img), show(e.currentTarget))}
+              onBlur={() => show(null)}
+            >
               <RLink path="/keynotes/" label="Keynotes" className="group flex items-baseline gap-6 py-6 md:gap-10">
                 <span className="rs-mono text-[13px] text-white/35">0{i + 1}</span>
-                <span className="rs-display text-[clamp(1.5rem,3.4vw,3rem)] leading-[1.05] text-white/80 transition-colors duration-300 group-hover:text-rs-accent">
+                <span className="rs-k-title rs-display text-[clamp(1.5rem,3.4vw,3rem)] leading-[1.05] text-white/80 transition-colors duration-300 group-hover:text-rs-accent">
                   {t.title}
                 </span>
               </RLink>
@@ -356,7 +471,7 @@ function KeynotesPreview() {
           ))}
         </ol>
       </div>
-      <div className="rs-follow pointer-events-none absolute left-0 top-0 z-10 hidden h-[220px] w-[320px] overflow-hidden rounded-[6px] opacity-0 md:block" aria-hidden="true">
+      <div className="rs-follow pointer-events-none absolute left-0 top-0 z-10 hidden h-[220px] w-[320px] origin-bottom-left overflow-hidden rounded-[6px] opacity-0 md:block" aria-hidden="true">
         <Image src={`${IMG}${img}`} alt="" fill sizes="320px" className="object-cover" />
       </div>
     </section>
@@ -382,7 +497,7 @@ function Latest() {
             </p>
             <p>
               <span className="rs-display block text-5xl text-rs-accent">{podcast.rating}</span>
-              <span className="rs-label">On Apple</span>
+              <span className="rs-label">On Apple Podcasts</span>
             </p>
           </div>
           {/* Waveform */}
@@ -391,9 +506,15 @@ function Latest() {
               <span key={i} className="rs-wave w-[4px] rounded-full bg-white/25" style={{ height: `${20 + ((i * 47) % 80)}%`, animationDelay: `${(i % 12) * -0.1}s` }} />
             ))}
           </div>
-          <RLink path="/podcast/" className="rs-btn rs-btn-ghost mt-8">
-            Listen ↗
-          </RLink>
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            {/* Apple's official badge, at button height */}
+            <a href={podcast.apple} target="_blank" rel="noopener noreferrer" className="focus-ring rounded-[8px] transition-transform duration-300 hover:-translate-y-px">
+              <Image src="/work/ross-simmonds/logos/apple-podcasts.svg" alt="Listen on Apple Podcasts" width={126} height={40} unoptimized className="h-10 w-auto" />
+            </a>
+            <RLink path="/podcast/" className="rs-btn rs-btn-ghost">
+              All episodes ↗
+            </RLink>
+          </div>
         </div>
         <div className="rs-latest">
           <div className="mb-6 flex items-end justify-between">
@@ -426,6 +547,7 @@ export default function Home() {
       <Hero />
       <Distribution />
       <Press />
+      <Shoutouts />
       <WaysIn />
       <Book />
       <KeynotesPreview />

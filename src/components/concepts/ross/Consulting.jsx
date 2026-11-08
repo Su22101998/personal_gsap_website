@@ -6,7 +6,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
 import { RLink } from './Shell'
-import { Count, Endorsers, Newsletter, SplitHeading, reduce, useRise } from './shared'
+import { Count, Endorsers, Logo, Newsletter, SplitHeading, reduce, useRise } from './shared'
 import { consulting as c } from './data'
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
@@ -84,10 +84,10 @@ function Hero() {
 
       <div className="mx-auto mt-20 max-w-[1400px] border-t border-white/10 pt-8">
         <p className="rs-label mb-5">Advised teams at</p>
-        <ul className="flex flex-wrap gap-x-14 gap-y-4">
+        <ul className="flex flex-wrap items-center gap-x-14 gap-y-8">
           {c.clients.map((cl) => (
-            <li key={cl} className="rs-display text-[clamp(1.6rem,2.8vw,2.4rem)] text-white/35">
-              {cl}
+            <li key={cl}>
+              <Logo id={cl} size={32} className="opacity-60 transition-opacity duration-300 hover:opacity-100" />
             </li>
           ))}
         </ul>
@@ -110,7 +110,7 @@ function Shift() {
           <Image src="/work/ross-simmonds/keynote-data-chart.jpg" alt="Ross Simmonds presenting data on stage" fill sizes="(min-width: 1024px) 35vw, 100vw" className="object-cover" />
         </div>
       </div>
-      <ul className="mx-auto mt-12 grid max-w-[1400px] gap-px overflow-hidden rounded-[10px] border border-white/10 bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
+      <ul className="mx-auto mt-12 grid max-w-[1400px] gap-px overflow-hidden rounded-[10px] border border-white/10 bg-white/10 sm:grid-cols-3">
         {c.shift.creds.map((cr) => (
           <li key={cr} className="rs-cred bg-[#0a0a0a] p-6 text-[15px] text-white/75">
             {cr}
@@ -131,7 +131,7 @@ function Results() {
         <SplitHeading className="rs-display mb-14 text-[clamp(2.4rem,5.5vw,5rem)] leading-[0.95]">Numbers from engines Ross and his team built.</SplitHeading>
         <dl className="grid gap-px overflow-hidden rounded-[14px] border border-white/10 bg-white/10 sm:grid-cols-2 lg:grid-cols-3">
           {c.results.map((r) => (
-            <div key={r.label + r.who} className="rs-result flex flex-col-reverse bg-[#0a0a0a] p-8 md:p-10">
+            <div key={r.label + r.who} className="rs-result flex flex-col-reverse items-center justify-end bg-[#0a0a0a] p-8 text-center md:p-10">
               <dt className="mt-3">
                 <span className="block text-[16px] text-white/80">{r.label}</span>
                 <span className="rs-label">{r.who}</span>
@@ -188,7 +188,8 @@ function Fit() {
 
 function Offers() {
   const ref = useRef(null)
-  useRise(ref, '.rs-offer', { y: 70, stagger: 0.12 })
+  // Cards land with a small bounce
+  useRise(ref, '.rs-offer', { y: 70, duration: 1.1, ease: 'back.out(1.8)' })
   return (
     <section ref={ref} id="offers" className="border-t border-white/10 px-5 py-24 md:px-8 md:py-32">
       <div className="mx-auto max-w-[1400px]">
@@ -197,13 +198,14 @@ function Offers() {
         <p className="mb-14 text-white/60">Every engagement starts with a 30-minute discovery call.</p>
         <div className="grid items-stretch gap-5 lg:grid-cols-3">
           {c.offers.map((o) => (
-            // Outer wrapper rises in (GSAP); the article carries the popular lift (CSS)
+            // Outer wrapper rises in (GSAP); the article carries the springy hover lift (CSS).
+            // All three sit on one line at one height.
             <div key={o.name} className="rs-offer flex">
             <article
-              className={`relative flex flex-1 flex-col rounded-[16px] border p-8 md:p-10 ${o.popular ? 'border-rs-accent bg-rs-accent text-[#0a0a0a] lg:-translate-y-6' : 'border-white/10 bg-[#111]'}`}
+              className={`rs-offer-card relative flex flex-1 flex-col rounded-[16px] border p-8 md:p-10 ${o.popular ? 'border-rs-accent bg-rs-accent text-[#0a0a0a]' : 'border-white/10 bg-[#111]'}`}
             >
               {o.popular && <span className="rs-mono absolute right-6 top-6 rounded-full bg-[#0a0a0a] px-3 py-1 text-[10px] uppercase tracking-[0.14em] text-rs-accent">Most popular</span>}
-              <h3 className="rs-display max-w-[14ch] text-[1.9rem] leading-[1.05]">{o.name}</h3>
+              <h3 className={`rs-display max-w-[14ch] text-[1.9rem] leading-[1.05] ${o.popular ? 'pr-20' : ''}`}>{o.name}</h3>
               <p className={`rs-mono mt-4 text-[13px] uppercase tracking-[0.12em] ${o.popular ? 'text-black/70' : 'text-rs-accent'}`}>{o.price}</p>
               <ul className={`mb-10 mt-8 space-y-3 border-t pt-6 text-[15px] ${o.popular ? 'border-black/20 text-black/80' : 'border-white/10 text-white/70'}`}>
                 {o.points.map((p) => (
@@ -299,7 +301,7 @@ function Cta() {
   return (
     <section className="relative overflow-hidden border-t border-white/10 bg-rs-accent px-5 py-28 text-[#0a0a0a] md:px-8 md:py-40">
       <div className="mx-auto flex max-w-[1400px] flex-wrap items-end justify-between gap-10">
-        <SplitHeading className="rs-display max-w-3xl text-[clamp(3rem,7vw,7rem)] leading-[0.9]">Ready to talk?</SplitHeading>
+        <SplitHeading className="rs-display rs-to-baseline max-w-3xl text-[clamp(3rem,7vw,7rem)] leading-[0.9] [--rs-lh:0.9]">Ready to talk?</SplitHeading>
         <div className="max-w-sm">
           <p className="text-[18px] text-black/75">One 30-minute call to decide whether this is the right move.</p>
           <div className="mt-6 flex flex-wrap gap-3">

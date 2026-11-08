@@ -32,12 +32,37 @@ export const proof = [
   { value: 1, prefix: '#', label: 'Amazon bestseller' },
 ]
 
-export const featuredIn = ['Forbes', 'HuffPost', 'CBC', 'VentureBeat', 'BET']
+/*
+ * Logos: full wordmarks, recoloured white and cropped tight, at
+ * public/work/ross-simmonds/logos/<id>.png. `w` is the width at the files'
+ * 120px height; <Logo> uses it to give every mark the same visual weight.
+ */
+export const LOGOS = {
+  forbes: { name: 'Forbes', w: 469 },
+  huffpost: { name: 'HuffPost', w: 983 },
+  cbc: { name: 'CBC', w: 237 },
+  venturebeat: { name: 'VentureBeat', w: 911 },
+  bet: { name: 'BET', w: 122 },
+  'business-com': { name: 'business.com', w: 780 },
+  canva: { name: 'Canva', w: 374 },
+  snowflake: { name: 'Snowflake', w: 530 },
+  webex: { name: 'Webex', w: 435 },
+  procore: { name: 'Procore', w: 955 },
+  eventbrite: { name: 'Eventbrite', w: 669 },
+  jobber: { name: 'Jobber', w: 722 },
+  ahrefs: { name: 'Ahrefs Evolve', w: 469 },
+  'cmo-huddles': { name: 'CMO Huddles', w: 146 },
+  hubspot: { name: 'HubSpot', w: 414 },
+  'exit-five': { name: 'Exit Five DRIVE', w: 867 },
+}
+
+// The live site's press strip, plus BET from his bio
+export const featuredIn = ['forbes', 'huffpost', 'cbc', 'venturebeat', 'bet', 'business-com']
 
 // The "one idea → every channel" tiles on the home page
 export const channels = [
   'LinkedIn post', 'X thread', 'YouTube Short', 'Reddit thread', 'Newsletter', 'Podcast clip',
-  'ChatGPT answer', 'Perplexity cite', 'AI Overview', 'Instagram carousel', 'Quora answer', 'Slide deck',
+  'Explainer video', 'LinkedIn carousel', 'Pinterest pin', 'Instagram carousel', 'Quora answer', 'Slide deck',
   'Blog refresh', 'TikTok', 'Webinar', 'Community post', 'Infographic', 'Sales one-pager',
   'Medium repost', 'Guest article', 'Quote card', 'Email nurture', 'Case study', 'Keynote slide',
 ]
@@ -49,20 +74,37 @@ export const waysIn = [
   { title: 'Run a workshop', body: 'A facilitated session that ends with a strategy, owners and a 90-day roadmap.', cta: 'Ask about a workshop', path: '/consulting/' },
 ]
 
-export const endorsers = [
-  { name: 'Rand Fishkin', role: 'SparkToro' },
-  { name: 'Jay Baer', role: 'Author, Talk Triggers' },
-  { name: 'Dave Gerhardt', role: 'Exit Five' },
-  { name: 'Joanna Wiebe', role: 'Copy Hackers' },
-  { name: 'Joel Klettke', role: 'Case Study Buddy' },
-  { name: 'Enrique Hoyos', role: 'Pexels' },
-  { name: 'Kieran Flanagan', role: 'Marketing Against The Grain' },
-  { name: 'Crystal Carter', role: 'Wix' },
-  { name: 'Jason Dodge', role: 'Black Truck Media' },
-  { name: 'Jordan Scheltgen', role: 'Cave Social' },
+// The shoutouts from the live home page's hero carousel, word for word
+export const shoutouts = [
+  { name: 'Jason Dodge', role: 'Founder, Black Truck Media', photo: 'jason-dodge', quote: 'Anybody interested in speaking and engaging while on stage, take notes from Ross - awesome energy & delivering the goods' },
+  { name: 'Crystal Carter', role: 'Head of SEO Comms, Wix', photo: 'crystal-carter', quote: 'I spent ages thanking Ross when I met him because I tried his content distro method and it’s fire.' },
+  { name: 'Kieran Flanagan', role: 'Marketing Against The Grain', photo: 'kieran-flanagan', quote: 'Ross is a person who understands how to grow companies, grow audiences, get millions of eyeballs using content and literally wrote the book on it.' },
+  { name: 'Jordan Scheltgen', role: 'Cave Social', photo: 'jordan-scheltgen', quote: 'Ross is a gem of a person and a great content marketer.' },
+  { name: 'Dave Gerhardt', role: 'Exit Five', photo: 'dave-gerhardt', quote: 'There’s no one better to teach you about content distribution and content marketing than Ross. Get the highlighter ready.' },
 ]
 
-export const podcast = { name: 'The Ross Simmonds Show', episodes: '150+', rating: '4.9★', network: 'HubSpot Podcast Network' }
+// Photos are the headshots from his live site (public/work/ross-simmonds/people/)
+export const endorsers = [
+  // Rand's photo: Sam Barnes / Web Summit, CC BY 2.0, via Wikimedia Commons
+  { name: 'Rand Fishkin', role: 'SparkToro', photo: 'rand-fishkin', url: 'https://www.linkedin.com/in/randfishkin/' },
+  { name: 'Jay Baer', role: 'Author, Talk Triggers', photo: 'jay-baer', url: 'https://www.linkedin.com/in/jaybaer/' },
+  { name: 'Dave Gerhardt', role: 'Exit Five', photo: 'dave-gerhardt', url: 'https://www.linkedin.com/in/davegerhardt/' },
+  { name: 'Joanna Wiebe', role: 'Copy Hackers', photo: 'joanna-wiebe', url: 'https://www.linkedin.com/in/joannawiebe/' },
+  { name: 'Joel Klettke', role: 'Case Study Buddy', photo: 'joel-klettke', url: 'https://www.linkedin.com/in/joelklettke/' },
+  { name: 'Enrique Hoyos', role: 'Pexels', photo: 'enrique-hoyos', url: 'https://www.linkedin.com/in/enriquehoyos/' },
+  { name: 'Kieran Flanagan', role: 'Marketing Against The Grain', photo: 'kieran-flanagan', url: 'https://www.linkedin.com/in/kieranjflanagan/' },
+  { name: 'Crystal Carter', role: 'Wix', photo: 'crystal-carter', url: 'https://www.linkedin.com/in/crystal-carter-digital/' },
+  { name: 'Jason Dodge', role: 'Black Truck Media', photo: 'jason-dodge', url: 'https://www.linkedin.com/in/dodgejd/' },
+  { name: 'Jordan Scheltgen', role: 'Cave Social', photo: 'jordan-scheltgen', url: 'https://www.linkedin.com/in/jordanscheltgen/' },
+]
+
+export const podcast = {
+  name: 'The Ross Simmonds Show',
+  episodes: '150+',
+  rating: '4.9★',
+  network: 'HubSpot Podcast Network',
+  apple: 'https://podcasts.apple.com/us/podcast/the-ross-simmonds-show/id1653650073',
+}
 
 /* ---------- Keynotes ---------- */
 
@@ -73,7 +115,7 @@ export const keynotes = {
     { value: 'Monthly', label: 'Appearances' },
     { value: '100+', label: 'References' },
   ],
-  stages: ['Ahrefs Evolve', 'CMO Huddles', 'HubSpot', 'Exit Five DRIVE'],
+  stages: ['ahrefs', 'cmo-huddles', 'hubspot', 'exit-five'],
   talks: [
     {
       title: 'Content Distribution In The Age Of Artificial Intelligence',
@@ -112,6 +154,14 @@ export const keynotes = {
     { title: 'Team workshop', body: 'Half or full day, ending with a working plan.' },
     { title: 'Fireside or panel', body: 'Moderated conversation with live audience questions.' },
   ],
+  // Long-form uploads from youtube.com/@RossSimmondsTV (thumbnails in videos/)
+  channel: 'https://www.youtube.com/@RossSimmondsTV/videos',
+  // His three most-watched videos (YouTube's Popular sort, Nov 2026)
+  videos: [
+    { id: 'wPEO-Gjld_E', views: '87K', title: 'B2B Marketing Strategy: How to Get More Leads for B2B Businesses' },
+    { id: 'gmtNHPS0Ycw', views: '50K', title: 'Reddit Marketing: How to Make the Most Out of Reddit' },
+    { id: 'kxj_aARpEc0', views: '27K', title: 'The Caption Mistake Killing Your Instagram Growth' },
+  ],
   gallery: ['keynote-ballroom.jpg', 'arms-out.jpg', 'headset-closeup.jpg', 'conference-panel.jpg', 'exit-five-drive.jpg', 'panel-portrait.jpg'],
 }
 
@@ -119,11 +169,11 @@ export const keynotes = {
 
 export const consulting = {
   h1: 'Advisory for marketing leaders who need to win in AI search.',
-  clients: ['Canva', 'Snowflake', 'Webex', 'Procore', 'Eventbrite', 'Jobber'],
+  clients: ['canva', 'snowflake', 'webex', 'procore', 'eventbrite', 'jobber'],
   shift: {
     title: 'The playbook that got you here is being rewritten in real time.',
     body: 'Buyers now ask an AI assistant before they ever visit your site. Search traffic is flattening, and publishing more of the same content into the same channels has become the expensive mistake.',
-    creds: ['Founder of Foundation', 'Creator of Distribution.ai', 'Author of Create Once, Distribute Forever', 'Top 50 CEO, Atlantic Canada'],
+    creds: ['Founder and CEO of Foundation and Distribution.ai', 'Author of Create Once, Distribute Forever', 'Top 50 CEO, Atlantic Canada'],
   },
   results: [
     { value: 156, prefix: '+', suffix: '%', label: 'Organic traffic', who: 'Event management SaaS' },
@@ -194,6 +244,7 @@ export const about = {
     { mark: 'Today', title: 'Advising on AI search', body: 'Helping CMOs get their brands named in AI answers, and taking that message to stages.', img: 'arms-out.jpg' },
   ],
   roles: [
+    { title: 'Founder & CEO', body: 'Running Foundation and Distribution.ai.', img: 'founder-ceo.jpg' },
     { title: 'Keynote speaker', body: 'On stage at marketing conferences around the world.', img: 'keynote-ballroom.jpg' },
     { title: 'Writer', body: 'Fifteen years of articles, research and a bestselling book.', img: 'keynote-storytelling.jpg' },
     { title: 'Marketer', body: 'Content, SEO and distribution engines for B2B and SaaS.', img: 'keynote-data-chart.jpg' },
@@ -224,9 +275,19 @@ export const book = {
     'Why second-time founders put distribution first',
   ],
   formats: [
-    { name: 'Print', note: 'On Amazon', url: 'https://www.amazon.com/Create-Once-Distribute-Forever-Creators/dp/1544541295/' },
-    { name: 'Kindle', note: 'Read it tonight', url: 'https://www.amazon.com/Create-Once-Distribute-Forever-Creators-ebook/dp/B0CVSF4JV9/' },
-    { name: 'Audiobook', note: 'Narrated by Ross, on Audible', url: 'https://www.audible.ca/pd/B0HGHP1KZ2' },
+    { name: 'Print', icon: 'print', note: 'On Amazon', url: 'https://www.amazon.com/Create-Once-Distribute-Forever-Creators/dp/1544541295/' },
+    { name: 'Kindle', icon: 'kindle', note: 'Read it tonight', url: 'https://www.amazon.com/Create-Once-Distribute-Forever-Creators-ebook/dp/B0CVSF4JV9/' },
+    { name: 'Audiobook', icon: 'audio', note: 'Narrated by Ross, on Audible', url: 'https://www.audible.ca/pd/B0HGHP1KZ2' },
   ],
-  readers: ['Jay Baer', 'Dave Gerhardt', 'Peep Laja', 'Talia Wolf', 'Katelyn Bourgoin', 'Wendy Jacobson', 'Bobby Warren', 'Aditya Sheth', 'Rand Fishkin', 'Joanna Wiebe', 'Joel Klettke', 'Enrique Hoyos'],
+  // Reader reviews from the live book page; photos in people/
+  readers: [
+    { name: 'Jay Baer', role: 'Bestselling author of Talk Triggers', photo: 'jay-baer', quote: 'Creating content that nobody finds is an expensive mistake. If content is ‘king,’ distribution is the chariot, and this book is the roadmap.' },
+    { name: 'Talia Wolf', role: 'Founder and Chief Optimizer at Getuplift', photo: 'talia-wolf', quote: 'Create Once, Distribute Forever is a game-changer for anyone who wants to master the MOST important part of content marketing: distribution. It is jam packed with practical tips, an action plan and a complete step-by-step playbook that will hold your hand every step of the way and give you everything you need to succeed. I guarantee you will be using this book over and over again for years to come.' },
+    { name: 'Peep Laja', role: 'CEO of Wynter, Founder of CXL.com', photo: 'peep-laja', quote: 'Everyone talks about the importance of distribution. This book actually teaches you how to do it.' },
+    { name: 'Wendy Jacobson', role: 'Owner of Incredible Content', photo: 'wendy-jacobson', quote: 'Ross will change the way you think about your content distribution strategy, and if you haven’t thought about it before reading his book, you will now. Full of analogies and examples, Ross walks you through the what, why, and how to distribute your content in an engaging and easy-to-consume manner. Leaving no stone unturned, he even includes a guide for every imaginable distribution channel, so you have no excuse not to be inspired and motivated. I can’t wait to apply what I’ve learned!' },
+    { name: 'Aditya Sheth', role: 'SEO Advisor at Superhuman', photo: 'aditya-sheth', quote: 'There are 100s of books on creating content, but none on distributing content. If you create great content, but never see the traffic, likes, or shares it deserves, this book is your bible. Read it and free yourself.' },
+    { name: 'Dave Gerhardt', role: 'Founder of ExitFive.com and former startup CMO', photo: 'dave-gerhardt', quote: 'Creating content is only half of the game. The other half is knowing how to get eyeballs on your content, and there’s no one better to teach you about content distribution and content marketing than Ross. Get the highlighter ready.' },
+    { name: 'Bobby Warren', role: 'Founder, Wooster Media Group LLC', photo: 'bobby-warren', quote: 'Google forever reminds us of the importance of helpful, relevant content. Now comes Ross Simmonds to remind us much work remains after content creation: meaningful distribution. In Create Once, Distribute Forever, Simmonds provides a masterclass in how to distribute and repurpose your prized content.' },
+    { name: 'Katelyn Bourgoin', role: 'CEO and Lead Trainer of Customer Camp', photo: 'katelyn-bourgoin', quote: 'If you’re spending hours creating outstanding content, congrats! You’ve mastered the first part of content marketing. In this book, Ross teaches the second part, the part that most marketers miss out on: content distribution. It’s a must-read.' },
+  ],
 }
