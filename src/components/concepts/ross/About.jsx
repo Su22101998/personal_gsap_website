@@ -8,7 +8,7 @@ import { SplitText } from 'gsap/SplitText'
 import { useGSAP } from '@gsap/react'
 import { RLink } from './Shell'
 import Book3D from './Book3D'
-import { Count, Endorsers, Newsletter, SplitHeading, reduce, useRise } from './shared'
+import { Count, Endorsers, Logo, Newsletter, SplitHeading, reduce, useRise } from './shared'
 import { about as a, consulting, featuredIn } from './data'
 
 gsap.registerPlugin(ScrollTrigger, SplitText, useGSAP)
@@ -64,11 +64,12 @@ function Numbers() {
   useRise(ref, '.rs-a-num', { y: 40 })
   return (
     <section ref={ref} className="px-5 py-20 md:px-8 md:py-28">
-      <dl className="mx-auto grid max-w-[1400px] gap-10 md:grid-cols-3">
+      {/* One size for all three, centred and top-aligned so they line up across the row */}
+      <dl className="mx-auto grid max-w-[1400px] gap-x-10 gap-y-12 md:grid-cols-3">
         {a.numbers.map((n, i) => (
-          <div key={n.label} className="rs-a-num flex flex-col-reverse border-t border-white/15 pt-6">
-            <dt className="mt-3 text-[16px] text-white/60">{n.label}</dt>
-            <dd className={`rs-display leading-none ${i === 0 ? 'text-[clamp(4.5rem,10vw,9rem)] text-rs-accent' : 'text-[clamp(3.5rem,7vw,6rem)]'}`}>
+          <div key={n.label} className="rs-a-num flex flex-col-reverse items-center justify-end border-t border-white/15 pt-10 text-center">
+            <dt className="mt-4 max-w-[26ch] text-[16px] leading-snug text-white/60">{n.label}</dt>
+            <dd className={`rs-display text-[clamp(3.4rem,6vw,5.6rem)] leading-[0.9] tracking-[-0.04em] ${i === 0 ? 'text-rs-accent' : ''}`}>
               <Count value={n.value} prefix={n.prefix} suffix={n.suffix} />
             </dd>
           </div>
@@ -157,7 +158,7 @@ function Chapters() {
   )
 }
 
-/* The four roles; the photo swaps with the hovered role */
+/* The five roles; the photo swaps with the hovered role */
 function Roles() {
   const ref = useRef(null)
   const [active, setActive] = useState(0)
@@ -171,7 +172,7 @@ function Roles() {
     <section ref={ref} className="border-t border-white/10 px-5 py-24 md:px-8 md:py-32">
       <div className="mx-auto grid max-w-[1400px] gap-12 lg:grid-cols-[1.2fr_1fr]">
         <div>
-          <p className="rs-label mb-6">Four hats</p>
+          <p className="rs-label mb-6">Five hats</p>
           <ul className="border-t border-white/15">
             {a.roles.map((r, i) => (
               <li key={r.title} className="border-b border-white/15">
@@ -230,15 +231,21 @@ function Ventures() {
         </div>
         <div className="rs-a-col">
           <p className="rs-label mb-6">Featured in</p>
-          <ul className="flex flex-wrap gap-x-6 gap-y-2">
+          <ul className="flex flex-wrap items-center gap-x-8 gap-y-6">
             {featuredIn.map((f) => (
-              <li key={f} className="rs-display text-[1.8rem] text-white/35">
-                {f}
+              <li key={f}>
+                <Logo id={f} size={24} className="opacity-50" />
               </li>
             ))}
           </ul>
-          <p className="rs-label mb-4 mt-10">Clients advised</p>
-          <p className="text-[16px] leading-relaxed text-white/65">{consulting.clients.join(' · ')}</p>
+          <p className="rs-label mb-6 mt-12">Clients advised</p>
+          <ul className="flex flex-wrap items-center gap-x-8 gap-y-6">
+            {consulting.clients.map((c) => (
+              <li key={c}>
+                <Logo id={c} size={24} className="opacity-70" />
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </section>

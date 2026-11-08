@@ -1,12 +1,12 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import Image from 'next/image'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
 import { RLink } from './Shell'
-import { Endorsers, Newsletter, SplitHeading, reduce, useRise } from './shared'
+import { Endorsers, Logo, Newsletter, SplitHeading, reduce, useRise } from './shared'
 import { keynotes as k } from './data'
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
@@ -42,18 +42,44 @@ function Hero() {
           </RLink>
           <dl className="flex gap-10">
             {k.stats.map((s) => (
-              <div key={s.label} className="flex flex-col-reverse">
+              <div key={s.label} className="flex flex-col-reverse items-center justify-end text-center">
                 <dt className="rs-label mt-1">{s.label}</dt>
                 <dd className="rs-display text-3xl">{s.value}</dd>
               </div>
             ))}
           </dl>
         </div>
-        <p className="rs-k-fade rs-mono mt-10 text-[12px] uppercase tracking-[0.14em] text-white/45">
-          Recent stages: {k.stages.join(' · ')}
-        </p>
+        <div className="rs-k-fade mt-12 flex flex-wrap items-center gap-x-10 gap-y-5">
+          <p className="rs-label">Recent stages</p>
+          <ul className="flex flex-wrap items-center gap-x-10 gap-y-5">
+            {k.stages.map((s) => (
+              <li key={s}>
+                <Logo id={s} size={26} className="opacity-70" />
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </section>
+  )
+}
+
+const YouTubeLogo = ({ className = '' }) => (
+  <Image src="/work/ross-simmonds/logos/youtube.svg" alt="YouTube" width={90} height={20} unoptimized className={`h-5 w-auto ${className}`} />
+)
+
+/* A talk's photo with a YouTube tag; it links to the recording once a talk has a `video` URL */
+function TalkImage({ talk }) {
+  const Frame = talk.video ? 'a' : 'div'
+  const link = talk.video ? { href: talk.video, target: '_blank', rel: 'noopener noreferrer', 'aria-label': `Watch “${talk.title}” on YouTube` } : {}
+  return (
+    <Frame {...link} className="group relative block min-h-[260px]">
+      <Image src={`${IMG}${talk.img}`} alt={`Ross Simmonds speaking: ${talk.title}`} fill sizes="(min-width: 768px) 45vw, 100vw" className="object-cover" />
+      <span className="absolute left-5 top-5 flex items-center gap-3 rounded-full bg-black/75 py-2.5 pl-3.5 pr-4 backdrop-blur">
+        <YouTubeLogo />
+        <span className="rs-mono text-[10px] uppercase tracking-[0.14em] text-white/75">{talk.video ? 'Watch the talk ↗' : 'Recording coming soon'}</span>
+      </span>
+    </Frame>
   )
 }
 
@@ -103,9 +129,7 @@ function Talks() {
                   Check availability ↗
                 </RLink>
               </div>
-              <div className="relative min-h-[260px]">
-                <Image src={`${IMG}${t.img}`} alt={`Ross Simmonds speaking: ${t.title}`} fill sizes="(min-width: 768px) 45vw, 100vw" className="object-cover" />
-              </div>
+              <TalkImage talk={t} />
             </div>
           </article>
         ))}
@@ -171,11 +195,69 @@ function Gallery() {
   )
 }
 
+/* Talks from his YouTube channel: a thumbnail grid; a click swaps in the player */
+/* The three most-watched videos, side by side at one size; each plays in place */
+function Videos() {
+  const ref = useRef(null)
+  const [playing, setPlaying] = useState(null)
+  useRise(ref, '.rs-video', { y: 50 })
+
+  // A render function, not a component: the cards keep their DOM when one starts playing
+  const card = (v) => {
+    const on = playing === v.id
+    return (
+      <li key={v.id} className="rs-video">
+        <div className="relative aspect-video overflow-hidden rounded-[10px] bg-[#111]">
+          {on ? (
+            <iframe
+              src={`https://www.youtube-nocookie.com/embed/${v.id}?autoplay=1&rel=0`}
+              title={v.title}
+              allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+              allowFullScreen
+              className="absolute inset-0 h-full w-full"
+            />
+          ) : (
+            <button type="button" onClick={() => setPlaying(v.id)} aria-label={`Play “${v.title}”`} className="focus-ring group absolute inset-0 block text-left">
+              <Image src={`${IMG}videos/${v.id}.jpg`} alt="" fill sizes="(min-width: 768px) 33vw, 100vw" className="object-cover transition-transform duration-700 group-hover:scale-105" />
+              <span className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+              <span className="absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-rs-accent text-[#0a0a0a] transition-transform duration-300 group-hover:scale-110">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M7 4.5v15l13-7.5z" />
+                </svg>
+              </span>
+            </button>
+          )}
+        </div>
+        <p className="rs-display mt-4 text-[1.15rem] leading-[1.15]">{v.title}</p>
+        <p className="rs-mono mt-2 text-[11px] uppercase tracking-[0.14em] text-white/45">{v.views} views</p>
+      </li>
+    )
+  }
+  return (
+    <section ref={ref} className="border-t border-white/10 px-5 py-24 md:px-8 md:py-32">
+      <div className="mx-auto max-w-[1400px]">
+        <div className="mb-14 flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <p className="rs-label mb-6 flex items-center gap-3">
+              <YouTubeLogo className="opacity-90" /> Most watched
+            </p>
+            <SplitHeading className="rs-display rs-to-baseline text-[clamp(2.4rem,5.5vw,5rem)] leading-[0.95]">Watch Ross before you book him.</SplitHeading>
+          </div>
+          <a href={k.channel} target="_blank" rel="noopener noreferrer" className="rs-btn rs-btn-ghost">
+            All videos on YouTube ↗
+          </a>
+        </div>
+        <ul className="grid gap-x-5 gap-y-10 md:grid-cols-3">{k.videos.map(card)}</ul>
+      </div>
+    </section>
+  )
+}
+
 function Booking() {
   return (
     <section className="border-t border-white/10 px-5 py-28 md:px-8 md:py-40">
       <div className="mx-auto flex max-w-[1400px] flex-wrap items-end justify-between gap-10">
-        <SplitHeading className="rs-display max-w-3xl text-[clamp(2.6rem,6vw,5.6rem)] leading-[0.95]">
+        <SplitHeading className="rs-display rs-to-baseline max-w-3xl text-[clamp(2.6rem,6vw,5.6rem)] leading-[0.95]">
           Tell Ross about your <span className="rs-serif text-rs-accent">event.</span>
         </SplitHeading>
         <div className="max-w-sm">
@@ -199,8 +281,9 @@ export default function Keynotes() {
     <>
       <Hero />
       <Talks />
-      <Formats />
+      <Videos />
       <Gallery />
+      <Formats />
       <Booking />
       <Endorsers />
       <Newsletter />

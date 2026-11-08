@@ -586,6 +586,24 @@ body {
     color: rgb(var(--rs-accent-rgb));
   }
 
+  /* Engagement cards: a lift with a slight overshoot on hover */
+  .rs-offer-card {
+    transition: transform 0.5s cubic-bezier(0.34, 1.8, 0.64, 1);
+  }
+  .rs-offer-card:hover {
+    transform: translateY(-8px);
+  }
+
+  /*
+   * A heading with a CTA beside it: end the heading's box on its baseline, not
+   * below the descenders, so the button's bottom lines up with the base of
+   * the letters. 0.117em is Inter Tight's depth below the baseline at a 0.95
+   * line height; set --rs-lh for a tighter or looser heading.
+   */
+  .rs-to-baseline {
+    margin-bottom: calc((0.95 - var(--rs-lh, 0.95)) / 2 * 1em - 0.117em);
+  }
+
   /* Rows that fill with orange from the left on hover */
   .rs-fill-row {
     position: relative;
