@@ -57,6 +57,42 @@ export function useRise(scope, selector, extra = {}) {
   )
 }
 
+/**
+ * Phones: a swipeable scroll-snap carousel. Put `track` and `onScroll` on the
+ * scroller (position it, so its slides' offsets are measured from it); render
+ * <CarouselDots> with `current` and `goTo`.
+ */
+export function useCarousel() {
+  const track = useRef(null)
+  const [current, setCurrent] = useState(0)
+  // The slide nearest the scroller's centre
+  const onScroll = () => {
+    const el = track.current
+    const mid = el.scrollLeft + el.clientWidth / 2
+    const dist = (s) => Math.abs(s.offsetLeft + s.offsetWidth / 2 - mid)
+    const slides = [...el.children]
+    setCurrent(slides.indexOf(slides.reduce((a, b) => (dist(b) < dist(a) ? b : a))))
+  }
+  const goTo = (i) => {
+    const el = track.current
+    const s = el.children[i]
+    el.scrollTo({ left: s.offsetLeft - (el.clientWidth - s.offsetWidth) / 2, behavior: reduce() ? 'auto' : 'smooth' })
+  }
+  return { track, current, onScroll, goTo }
+}
+
+export function CarouselDots({ count, current, goTo, noun = 'slide', className = '' }) {
+  return (
+    <div className={`mt-4 flex items-center justify-center gap-2 ${className}`}>
+      {Array.from({ length: count }, (_, i) => (
+        <button key={i} type="button" onClick={() => goTo(i)} aria-label={`Show ${noun} ${i + 1} of ${count}`} aria-current={i === current} className="flex h-6 items-center px-1">
+          <span className={`block h-1.5 rounded-full transition-all duration-300 ${i === current ? 'w-6 bg-rs-accent' : 'w-1.5 bg-white/25'}`} />
+        </button>
+      ))}
+    </div>
+  )
+}
+
 /** Count up to `value` when scrolled into view. */
 export function Count({ value, prefix = '', suffix = '', className = '' }) {
   const ref = useRef(null)
