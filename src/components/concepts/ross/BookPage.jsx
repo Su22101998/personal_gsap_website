@@ -7,7 +7,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
 import { RLink } from './Shell'
 import Book3D from './Book3D'
-import { Endorsers, Newsletter, SplitHeading, reduce, useRise } from './shared'
+import { CarouselDots, Endorsers, Newsletter, SplitHeading, reduce, useCarousel, useRise } from './shared'
 import { book as b } from './data'
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
@@ -366,9 +366,32 @@ function FreeChapter() {
 }
 
 /* Reader reviews from the live book page, each with its photo and stars */
+const ReaderCaption = ({ r }) => (
+  <figcaption className="flex items-center gap-4 border-t border-white/10 pt-5">
+    <Image src={`/work/ross-simmonds/people/${r.photo}.jpg`} alt="" width={48} height={48} className="h-12 w-12 rounded-full object-cover" />
+    <span>
+      <span className="block text-[16px] font-medium text-[#f2f0eb]">{r.name}</span>
+      <span className="block text-[13px] leading-snug text-white/50">{r.role}</span>
+    </span>
+  </figcaption>
+)
+
+const Stars = () => (
+  <span className="text-[14px] tracking-[0.2em] text-rs-accent" aria-label="Five stars">
+    ★★★★★
+  </span>
+)
+
+/*
+ * The phone and desktop layouts are separate lists, so neither's behaviour
+ * leaks into the other: the cards' inner scrolling (and its opt-out from the
+ * smooth scroll) exists only in the phone carousel.
+ */
 function Readers() {
   const ref = useRef(null)
+  const { track, current, onScroll, goTo } = useCarousel()
   useRise(ref, '.rs-reader', { y: 40 })
+  useRise(ref, '.rs-readers-m', { y: 40 })
   return (
     <section ref={ref} className="border-t border-white/10 px-5 py-24 md:px-8 md:py-32">
       <div className="mx-auto max-w-[1400px]">
@@ -376,21 +399,38 @@ function Readers() {
         <SplitHeading className="rs-display mb-14 max-w-4xl text-[clamp(2.4rem,5.5vw,5rem)] leading-[0.95]">
           Pull out a pen <span className="rs-serif text-rs-accent">and a highlighter.</span>
         </SplitHeading>
-        <ul className="gap-5 sm:columns-2 lg:columns-3">
+
+        {/* Phones: a carousel of equal cards; a long review scrolls inside its card */}
+        <div className="rs-readers-m md:hidden">
+          <ul ref={track} onScroll={onScroll} className="relative -mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {b.readers.map((r) => (
+              <li key={r.name} className="w-[84%] shrink-0 snap-center">
+                <figure className="flex h-[420px] flex-col gap-6 rounded-[14px] border border-white/10 bg-white/[0.03] p-7">
+                  <Stars />
+                  {/* The fade at the foot hints there's more; the bottom padding lets the last line scroll clear of it */}
+                  <blockquote
+                    data-lenis-prevent
+                    tabIndex={0}
+                    className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-6 text-[17px] leading-relaxed text-white/80 [mask-image:linear-gradient(to_bottom,black_calc(100%-32px),transparent)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                  >
+                    &ldquo;{r.quote}&rdquo;
+                  </blockquote>
+                  <ReaderCaption r={r} />
+                </figure>
+              </li>
+            ))}
+          </ul>
+          <CarouselDots count={b.readers.length} current={current} goTo={goTo} noun="review" className="mt-6" />
+        </div>
+
+        {/* Tablet and desktop: masonry columns, every review in full */}
+        <ul className="hidden gap-5 md:block md:columns-2 lg:columns-3">
           {b.readers.map((r) => (
             <li key={r.name} className="rs-reader mb-5 break-inside-avoid">
-              <figure className="flex flex-col gap-6 rounded-[14px] border border-white/10 bg-white/[0.03] p-7 transition-colors duration-500 hover:border-rs-accent/60 md:p-8">
-                <span className="text-[14px] tracking-[0.2em] text-rs-accent" aria-label="Five stars">
-                  ★★★★★
-                </span>
+              <figure className="flex flex-col gap-6 rounded-[14px] border border-white/10 bg-white/[0.03] p-8 transition-colors duration-500 hover:border-rs-accent/60">
+                <Stars />
                 <blockquote className="text-[17px] leading-relaxed text-white/80">&ldquo;{r.quote}&rdquo;</blockquote>
-                <figcaption className="flex items-center gap-4 border-t border-white/10 pt-5">
-                  <Image src={`/work/ross-simmonds/people/${r.photo}.jpg`} alt="" width={48} height={48} className="h-12 w-12 rounded-full object-cover" />
-                  <span>
-                    <span className="block text-[16px] font-medium text-[#f2f0eb]">{r.name}</span>
-                    <span className="block text-[13px] leading-snug text-white/50">{r.role}</span>
-                  </span>
-                </figcaption>
+                <ReaderCaption r={r} />
               </figure>
             </li>
           ))}

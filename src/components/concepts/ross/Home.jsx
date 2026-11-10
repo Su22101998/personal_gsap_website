@@ -8,7 +8,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
 import { RLink } from './Shell'
 import Book3D from './Book3D'
-import { Count, Endorsers, Logo, Newsletter, SplitHeading, reduce, useRise } from './shared'
+import { CarouselDots, Count, Endorsers, Logo, Newsletter, SplitHeading, reduce, useCarousel, useRise } from './shared'
 import { channels, featuredIn, formatDate, keynotes, podcast, posts, proof, shoutouts, waysIn } from './data'
 
 gsap.registerPlugin(Draggable, ScrollTrigger, useGSAP)
@@ -141,6 +141,39 @@ function Distribution() {
           .to(count, { n: channels.length, duration: 0.55, ease: 'none', onUpdate: () => (counter.textContent = Math.round(count.n)) }, 0.2)
           .to(card, { scale: 0.82, duration: 0.25 }, 0.75)
       })
+
+      // Phones and tablets: every channel bursts out of the idea card and
+      // lands in the cloud below it as you scroll; the count climbs with them
+      mm.add('(max-width: 1023px) and (prefers-reduced-motion: no-preference)', () => {
+        const box = ref.current.querySelector('.rs-dist-m')
+        const card = box.querySelector('.rs-idea-m')
+        const chips = gsap.utils.toArray('.rs-chip', box)
+        const counter = box.querySelector('.rs-dist-count-m')
+        const count = { n: 1 }
+        // Offset from each chip's resting place to the card's centre. Layout
+        // offsets ignore transforms, so this holds on every refresh
+        const list = chips[0].parentNode
+        const from = (el, axis) =>
+          axis === 'x'
+            ? card.offsetLeft + card.offsetWidth / 2 - (list.offsetLeft + el.offsetLeft + el.offsetWidth / 2)
+            : card.offsetTop + card.offsetHeight / 2 - (list.offsetTop + el.offsetTop + el.offsetHeight / 2)
+        gsap
+          .timeline({ scrollTrigger: { trigger: box, start: 'top 65%', end: 'bottom 75%', scrub: 0.8, invalidateOnRefresh: true } })
+          .fromTo(card, { scale: 0.9, rotation: -3 }, { scale: 1, rotation: 0, duration: 0.2, ease: 'back.out(3)' })
+          .fromTo(
+            chips,
+            {
+              x: (i, el) => from(el, 'x'),
+              y: (i, el) => from(el, 'y'),
+              scale: 0.2,
+              opacity: 0,
+              rotation: (i) => ((i * 53) % 40) - 20,
+            },
+            { x: 0, y: 0, scale: 1, opacity: 1, rotation: (i) => ((i * 37) % 7) - 3, ease: 'power3.out', duration: 0.5, stagger: 0.025 },
+            0.1
+          )
+          .fromTo(count, { n: 1 }, { n: channels.length, ease: 'none', duration: 0.5 + 0.025 * channels.length, onUpdate: () => (counter.textContent = Math.round(count.n)) }, 0.1)
+      })
     },
     { scope: ref }
   )
@@ -181,18 +214,32 @@ function Distribution() {
         </div>
       </div>
 
-      {/* Phones and tablets: the result, as a grid */}
-      <div className="px-5 py-20 md:px-8 lg:hidden">
-        <h2 className="rs-display text-[clamp(2.6rem,9vw,4rem)] leading-[1]">
+      {/* Phones and tablets: one card bursts into every channel as you scroll */}
+      <div className="rs-dist-m relative px-5 py-20 md:px-8 lg:hidden">
+        <div className="pointer-events-none absolute left-1/2 top-[45%] h-[90vw] w-[90vw] -translate-x-1/2 rounded-full bg-rs-accent opacity-[0.1] blur-[90px]" aria-hidden="true" />
+        <h2 className="rs-display relative text-[clamp(2.6rem,11vw,4.4rem)] leading-[0.95]">
           Create once. <span className="text-rs-accent">Distribute forever.</span>
         </h2>
-        <ul className="mt-10 grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {channels.slice(0, 12).map((c) => (
-            <li key={c} className="rs-mono rounded-[10px] border border-white/15 bg-[#151515] px-4 py-4 text-[11px] uppercase tracking-[0.1em] text-white/75">
+        <div className="rs-idea-m relative z-10 mx-auto mt-12 flex max-w-[320px] flex-col gap-3 rounded-[14px] bg-[#f2f0eb] p-6 text-[#0a0a0a] shadow-[0_40px_80px_-30px_rgb(var(--rs-accent-rgb)/0.6)]">
+          <span className="rs-mono text-[11px] uppercase tracking-[0.16em] text-rs-accent">One idea</span>
+          <span className="rs-display text-[26px] leading-[1.05]">A single, great piece of content</span>
+          <span className="rs-mono text-[11px] uppercase tracking-[0.14em] text-black/50">Blog post · 2,400 words</span>
+        </div>
+        <ul className="relative mt-10 flex flex-wrap justify-center gap-2" aria-label="Channels one piece of content can reach">
+          {channels.map((c, i) => (
+            <li
+              key={c}
+              className={`rs-chip rs-mono flex items-center gap-2 rounded-full px-3.5 py-2 text-[10.5px] uppercase tracking-[0.1em] ${
+                i % 5 === 0 ? 'bg-rs-accent text-[#0a0a0a]' : 'border border-white/15 bg-[#151515] text-white/80'
+              }`}
+            >
               {c}
             </li>
           ))}
         </ul>
+        <p className="rs-mono relative mt-10 text-center text-[12px] uppercase tracking-[0.14em] text-white/50">
+          1 idea → <span className="rs-dist-count-m rs-display align-middle text-[3rem] text-[#f2f0eb]">{channels.length}</span> assets
+        </p>
       </div>
     </section>
   )
@@ -231,10 +278,14 @@ const NOTES = [
 
 function Shoutouts() {
   const ref = useRef(null)
+  const { track, current, onScroll, goTo } = useCarousel()
   useGSAP(
     () => {
       const notes = gsap.utils.toArray('.rs-note')
-      if (!reduce()) {
+      const mm = gsap.matchMedia()
+      // Desktop and tablet: the notes drop onto the wall. Phones: they slide
+      // into the carousel from the right (a drop would spill out of its scroller)
+      mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', () => {
         gsap.from(notes, {
           y: 120,
           scale: 0.6,
@@ -244,10 +295,12 @@ function Shoutouts() {
           stagger: { each: 0.09, from: 'random' },
           scrollTrigger: { trigger: ref.current, start: 'top 75%', once: true },
         })
-      }
+      })
+      mm.add('(max-width: 767px) and (prefers-reduced-motion: no-preference)', () => {
+        gsap.from(notes, { x: 160, opacity: 0, duration: 1, ease: 'expo.out', stagger: 0.08, scrollTrigger: { trigger: ref.current, start: 'top 75%', once: true } })
+      })
       // Drag them around with a mouse; touch keeps its scroll
-      const mm = gsap.matchMedia()
-      mm.add('(pointer: fine)', () => {
+      mm.add('(pointer: fine) and (min-width: 768px)', () => {
         // The note you pick up comes to the front. Raise its <li>: the rise-in
         // transform makes each one its own stacking context
         let top = 5
@@ -276,11 +329,16 @@ function Shoutouts() {
               What people <span className="rs-serif text-rs-accent">have to say.</span>
             </SplitHeading>
           </div>
-          <p className="rs-mono hidden items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-white/45 [@media(pointer:fine)]:flex">
+          <p className="rs-mono hidden items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-white/45 md:[@media(pointer:fine)]:flex">
             <span className="text-rs-accent">✦</span> Drag the notes around
           </p>
         </div>
-        <ul className="flex flex-wrap items-start justify-center gap-6 md:gap-8 lg:gap-0">
+        {/* Phones: a swipeable carousel that snaps note by note. Wider: the wall */}
+        <ul
+          ref={track}
+          onScroll={onScroll}
+          className="relative -mx-5 flex snap-x snap-mandatory items-stretch gap-4 overflow-x-auto px-5 py-6 [scrollbar-width:none] md:mx-0 md:flex-wrap md:items-start md:justify-center md:gap-8 md:overflow-visible md:px-0 md:py-0 lg:gap-0 [&::-webkit-scrollbar]:hidden"
+        >
           {shoutouts.map((q, i) => {
             const hot = i === 1
             return (
@@ -288,12 +346,12 @@ function Shoutouts() {
               <li
                 key={q.name}
                 style={{ '--mt': NOTES[i].mt, zIndex: NOTES[i].z }}
-                className={`rs-note relative w-full sm:w-[calc(50%-12px)] lg:mt-[var(--mt)] lg:w-[30%] ${i % 2 ? 'sm:mt-10' : ''}`}
+                className={`rs-note relative w-[84%] shrink-0 snap-center md:w-[calc(50%-16px)] lg:mt-[var(--mt)] lg:w-[30%] ${i % 2 ? 'md:mt-10' : ''}`}
               >
-                <div className="rs-note-drag">
+                <div className="rs-note-drag h-full">
                   <figure
                     style={{ '--tilt': `${NOTES[i].tilt}deg` }}
-                    className={`flex flex-col gap-6 rounded-[18px] p-7 shadow-[0_30px_60px_-30px_rgb(0_0_0/0.9)] transition-transform duration-500 [transform:rotate(var(--tilt))] [transition-timing-function:cubic-bezier(0.34,1.8,0.64,1)] hover:[transform:rotate(0deg)_scale(1.03)] md:p-8 ${
+                    className={`flex h-full flex-col gap-6 rounded-[18px] p-7 shadow-[0_30px_60px_-30px_rgb(0_0_0/0.9)] transition-transform duration-500 [transform:rotate(var(--tilt))] [transition-timing-function:cubic-bezier(0.34,1.8,0.64,1)] hover:[transform:rotate(0deg)_scale(1.03)] md:p-8 ${
                       hot ? 'bg-rs-accent text-[#0a0a0a]' : 'border border-white/10 bg-[#161616]'
                     }`}
                   >
@@ -301,7 +359,7 @@ function Shoutouts() {
                       &ldquo;
                     </span>
                     <blockquote className={`rs-display text-[clamp(1.25rem,1.9vw,1.6rem)] leading-[1.2] ${hot ? '' : 'text-[#f2f0eb]'}`}>{q.quote}</blockquote>
-                    <figcaption className="flex items-center gap-3">
+                    <figcaption className="mt-auto flex items-center gap-3">
                       <Image src={`${IMG}people/${q.photo}.jpg`} alt="" width={44} height={44} draggable={false} className="h-11 w-11 rounded-full object-cover" />
                       <span>
                         <span className="block text-[15px] font-medium">{q.name}</span>
@@ -314,6 +372,7 @@ function Shoutouts() {
             )
           })}
         </ul>
+        <CarouselDots count={shoutouts.length} current={current} goTo={goTo} noun="note" className="md:hidden" />
       </div>
     </section>
   )

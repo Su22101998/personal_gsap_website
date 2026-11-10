@@ -1,12 +1,12 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
 import { RLink } from './Shell'
-import { Endorsers, Logo, Newsletter, SplitHeading, reduce, useRise } from './shared'
+import { CarouselDots, Endorsers, Logo, Newsletter, SplitHeading, reduce, useCarousel, useRise } from './shared'
 import { keynotes as k } from './data'
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
@@ -69,17 +69,77 @@ const YouTubeLogo = ({ className = '' }) => (
 )
 
 /* A talk's photo with a YouTube tag; it links to the recording once a talk has a `video` URL */
-function TalkImage({ talk }) {
+function TalkImage({ talk, className = 'min-h-[260px]' }) {
   const Frame = talk.video ? 'a' : 'div'
   const link = talk.video ? { href: talk.video, target: '_blank', rel: 'noopener noreferrer', 'aria-label': `Watch “${talk.title}” on YouTube` } : {}
   return (
-    <Frame {...link} className="group relative block min-h-[260px]">
+    <Frame {...link} className={`group relative block ${className}`}>
       <Image src={`${IMG}${talk.img}`} alt={`Ross Simmonds speaking: ${talk.title}`} fill sizes="(min-width: 768px) 45vw, 100vw" className="object-cover" />
       <span className="absolute left-5 top-5 flex items-center gap-3 rounded-full bg-black/75 py-2.5 pl-3.5 pr-4 backdrop-blur">
         <YouTubeLogo />
         <span className="rs-mono text-[10px] uppercase tracking-[0.14em] text-white/75">{talk.video ? 'Watch the talk ↗' : 'Recording coming soon'}</span>
       </span>
     </Frame>
+  )
+}
+
+/*
+ * Phones: the stacked cards run taller than the screen, so each would cover
+ * the last mid-read. Instead, an accordion: five titles, one open at a time.
+ */
+function TalksList() {
+  const [open, setOpen] = useState(0)
+  const rows = useRef([])
+  const toggle = (i) => {
+    setOpen(open === i ? -1 : i)
+    // Once the row above has folded away, bring the opened one's title into view if it scrolled off
+    if (open !== i)
+      setTimeout(() => {
+        const row = rows.current[i]
+        if (row.getBoundingClientRect().top < 80) row.scrollIntoView({ behavior: reduce() ? 'auto' : 'smooth', block: 'start' })
+      }, 520)
+  }
+  return (
+    <ol className="border-t border-white/15 md:hidden">
+      {k.talks.map((t, i) => {
+        const on = open === i
+        return (
+          <li key={t.title} ref={(el) => (rows.current[i] = el)} className="scroll-mt-20 border-b border-white/15">
+            <button type="button" onClick={() => toggle(i)} aria-expanded={on} aria-controls={`rs-talk-${i}`} className="flex w-full items-start gap-4 py-6 text-left">
+              <span className={`rs-display text-[2rem] leading-[0.9] transition-colors duration-300 ${on ? 'text-rs-accent' : 'text-white/30'}`}>0{i + 1}</span>
+              <span className="flex-1">
+                <span className="rs-display block text-[1.5rem] leading-[1.08]">{t.title}</span>
+                <span className="rs-serif mt-1.5 block text-[1.05rem] text-white/55">{t.sub}</span>
+              </span>
+              {/* Plus that turns into a minus */}
+              <span className={`relative mt-1.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors duration-300 ${on ? 'border-rs-accent bg-rs-accent' : 'border-white/20'}`} aria-hidden="true">
+                <span className={`absolute h-[1.5px] w-3 ${on ? 'bg-[#0a0a0a]' : 'bg-[#f2f0eb]'}`} />
+                <span className={`absolute h-3 w-[1.5px] bg-[#f2f0eb] transition-transform duration-300 ${on ? 'scale-y-0' : ''}`} />
+              </span>
+            </button>
+            {/* Grid rows 0fr → 1fr: a smooth open to the content's own height */}
+            <div id={`rs-talk-${i}`} className={`grid transition-[grid-template-rows] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${on ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+              <div className="overflow-hidden" inert={on ? undefined : ''}>
+                <div className="pb-8">
+                  <TalkImage talk={t} className="aspect-[16/10] overflow-hidden rounded-[10px]" />
+                  <ul className="mt-6 space-y-3">
+                    {t.points.map((p) => (
+                      <li key={p} className="flex gap-3 text-[16px] leading-snug text-white/75">
+                        <span className="mt-[8px] h-1.5 w-1.5 shrink-0 rounded-full bg-rs-accent" aria-hidden="true" />
+                        {p}
+                      </li>
+                    ))}
+                  </ul>
+                  <RLink path="/contact-ross/" className="rs-btn rs-btn-ghost mt-7 w-full">
+                    Check availability ↗
+                  </RLink>
+                </div>
+              </div>
+            </div>
+          </li>
+        )
+      })}
+    </ol>
   )
 }
 
@@ -105,12 +165,13 @@ function Talks() {
   )
 
   return (
-    <section ref={ref} id="talks" className="px-5 pb-24 pt-24 md:px-8 md:pt-32">
+    <section ref={ref} id="talks" className="px-5 pb-16 pt-24 md:px-8 md:pb-24 md:pt-32">
       <div className="mx-auto max-w-[1400px]">
         <p className="rs-label mb-6">Signature keynotes</p>
-        <SplitHeading className="rs-display mb-16 text-[clamp(2.4rem,5.5vw,5rem)] leading-[0.95]">Five talks. Every one ends with a plan.</SplitHeading>
+        <SplitHeading className="rs-display mb-12 text-[clamp(2.4rem,5.5vw,5rem)] leading-[0.95] md:mb-16">Five talks. Every one ends with a plan.</SplitHeading>
+        <TalksList />
         {k.talks.map((t, i) => (
-          <article key={t.title} className="rs-talk sticky mb-8" style={{ top: `calc(90px + ${i * 12}px)` }}>
+          <article key={t.title} className="rs-talk sticky mb-8 hidden md:block" style={{ top: `calc(90px + ${i * 12}px)` }}>
             <div className="rs-talk-inner relative grid origin-top overflow-hidden rounded-[14px] border border-white/10 bg-[#121212] md:min-h-[72vh] md:grid-cols-[1.1fr_1fr]">
               <div className="rs-talk-shade pointer-events-none absolute inset-0 z-10 bg-black opacity-0" aria-hidden="true" />
               <div className="flex flex-col p-8 md:p-12">
@@ -200,13 +261,16 @@ function Gallery() {
 function Videos() {
   const ref = useRef(null)
   const [playing, setPlaying] = useState(null)
+  const { track, current, onScroll, goTo } = useCarousel()
   useRise(ref, '.rs-video', { y: 50 })
+  // Swiping to another video stops the one playing
+  useEffect(() => setPlaying(null), [current])
 
   // A render function, not a component: the cards keep their DOM when one starts playing
   const card = (v) => {
     const on = playing === v.id
     return (
-      <li key={v.id} className="rs-video">
+      <li key={v.id} className="rs-video w-[86%] shrink-0 snap-center md:w-auto">
         <div className="relative aspect-video overflow-hidden rounded-[10px] bg-[#111]">
           {on ? (
             <iframe
@@ -218,7 +282,7 @@ function Videos() {
             />
           ) : (
             <button type="button" onClick={() => setPlaying(v.id)} aria-label={`Play “${v.title}”`} className="focus-ring group absolute inset-0 block text-left">
-              <Image src={`${IMG}videos/${v.id}.jpg`} alt="" fill sizes="(min-width: 768px) 33vw, 100vw" className="object-cover transition-transform duration-700 group-hover:scale-105" />
+              <Image src={`${IMG}videos/${v.id}.jpg`} alt="" fill sizes="(min-width: 768px) 33vw, 86vw" className="object-cover transition-transform duration-700 group-hover:scale-105" />
               <span className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
               <span className="absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-rs-accent text-[#0a0a0a] transition-transform duration-300 group-hover:scale-110">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -247,7 +311,15 @@ function Videos() {
             All videos on YouTube ↗
           </a>
         </div>
-        <ul className="grid gap-x-5 gap-y-10 md:grid-cols-3">{k.videos.map(card)}</ul>
+        {/* Phones: a swipeable carousel, the next video peeking in. Wider: three across */}
+        <ul
+          ref={track}
+          onScroll={onScroll}
+          className="relative -mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto overflow-y-hidden px-5 [scrollbar-width:none] md:mx-0 md:grid md:grid-cols-3 md:gap-5 md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden"
+        >
+          {k.videos.map(card)}
+        </ul>
+        <CarouselDots count={k.videos.length} current={current} goTo={goTo} noun="video" className="mt-6 md:hidden" />
       </div>
     </section>
   )

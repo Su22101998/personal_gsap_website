@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useCallback, useContext, useEffect, useRef } from 'react'
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import gsap from 'gsap'
@@ -136,10 +136,91 @@ function ConceptBar() {
   )
 }
 
+/**
+ * Phones: the burger opens a full-screen menu of big links that rise in. It
+ * sits just under the header (outside it: the header's backdrop blur would
+ * trap a fixed child), so the burger stays put and turns into a cross.
+ */
+function MobileMenu({ open, onClose, headerRef }) {
+  const pathname = usePathname()
+  const ref = useRef(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!open) {
+      gsap.to(el, { autoAlpha: 0, duration: reduce() ? 0 : 0.3, ease: 'power2.in' })
+      return
+    }
+    el.style.paddingTop = `${headerRef.current.getBoundingClientRect().bottom}px`
+    const root = document.documentElement
+    root.style.overflow = 'hidden'
+    const onKey = (e) => e.key === 'Escape' && onClose()
+    window.addEventListener('keydown', onKey)
+    const tl = gsap.timeline()
+    tl.set(el, { autoAlpha: 1 })
+    if (!reduce()) {
+      tl.fromTo(el, { clipPath: 'inset(0 0 100% 0)' }, { clipPath: 'inset(0 0 0% 0)', duration: 0.6, ease: 'power4.inOut' }).from(
+        el.querySelectorAll('.rs-mm-item'),
+        { yPercent: 110, duration: 0.7, ease: 'expo.out', stagger: 0.05 },
+        '-=0.25'
+      )
+    }
+    return () => {
+      tl.kill()
+      root.style.overflow = ''
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [open, onClose, headerRef])
+
+  return (
+    <div
+      ref={ref}
+      id="rs-mobile-menu"
+      data-lenis-prevent
+      className="invisible fixed inset-0 z-[29] flex flex-col overflow-y-auto bg-[#0a0a0a] opacity-0 md:hidden"
+      aria-hidden={!open}
+    >
+      <ol className="flex-1 px-5 pt-8">
+        {nav.map((n, i) => {
+          const active = isBuilt(n.path) && pathname?.startsWith(href(n.path))
+          return (
+            <li key={n.path} className="overflow-hidden border-b border-white/10">
+              <RLink
+                path={n.path}
+                label={n.label}
+                tabIndex={open ? 0 : -1}
+                className={`rs-mm-item flex items-baseline gap-4 py-4 ${active ? 'text-rs-accent' : 'text-[#f2f0eb]'}`}
+              >
+                <span className="rs-mono text-[11px] text-white/35">0{i + 1}</span>
+                <span className="rs-display text-[2.6rem] leading-[1]">{n.label}</span>
+                {!isBuilt(n.path) && <span className="rs-mono ml-auto text-[12px] text-white/40" aria-hidden="true">↗</span>}
+              </RLink>
+            </li>
+          )
+        })}
+      </ol>
+      <div className="overflow-hidden px-5 pb-10 pt-8">
+        <div className="rs-mm-item">
+          <RLink path="/consulting/" label="Consulting" tabIndex={open ? 0 : -1} className="rs-btn rs-btn-orange w-full">
+            Work with me →
+          </RLink>
+          <p className="rs-mono mt-6 text-[11px] uppercase tracking-[0.14em] text-white/40">Create once. Distribute forever.</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function Nav() {
   const pathname = usePathname()
+  const headerRef = useRef(null)
+  const [open, setOpen] = useState(false)
+  const close = useCallback(() => setOpen(false), [])
+  // Close on navigation
+  useEffect(close, [pathname, close])
   return (
-    <header className="sticky top-0 z-30 border-b border-white/10 bg-[#0a0a0a]/80 backdrop-blur-md">
+    <>
+    <header ref={headerRef} className="sticky top-0 z-30 border-b border-white/10 bg-[#0a0a0a]/80 backdrop-blur-md">
       <nav className="mx-auto flex h-16 max-w-[1400px] items-center justify-between gap-6 px-5 md:px-8">
         <RLink path="/" label="Ross Simmonds" className="focus-ring flex items-center gap-2 text-[15px] font-semibold tracking-tight text-[#f2f0eb]">
           <span className="h-2 w-2 rounded-full bg-rs-accent" aria-hidden="true" />
@@ -162,11 +243,27 @@ function Nav() {
             )
           })}
         </ul>
-        <RLink path="/consulting/" label="Consulting" className="rs-btn rs-btn-orange">
-          Work with me
-        </RLink>
+        <div className="flex items-center gap-3">
+          <RLink path="/consulting/" label="Consulting" className="rs-btn rs-btn-orange max-[399px]:hidden">
+            Work with me
+          </RLink>
+          <button
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+            aria-controls="rs-mobile-menu"
+            aria-label={open ? 'Close menu' : 'Open menu'}
+            className="focus-ring relative flex h-10 w-10 items-center justify-center rounded-[4px] border border-white/20 md:hidden"
+          >
+            {/* Two bars that cross when open */}
+            <span className={`absolute h-[1.5px] w-[18px] bg-[#f2f0eb] transition-transform duration-300 ${open ? 'rotate-45' : '-translate-y-[4px]'}`} />
+            <span className={`absolute h-[1.5px] w-[18px] bg-[#f2f0eb] transition-transform duration-300 ${open ? '-rotate-45' : 'translate-y-[4px]'}`} />
+          </button>
+        </div>
       </nav>
     </header>
+    <MobileMenu open={open} onClose={close} headerRef={headerRef} />
+    </>
   )
 }
 

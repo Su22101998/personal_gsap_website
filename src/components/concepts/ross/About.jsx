@@ -8,7 +8,7 @@ import { SplitText } from 'gsap/SplitText'
 import { useGSAP } from '@gsap/react'
 import { RLink } from './Shell'
 import Book3D from './Book3D'
-import { Count, Endorsers, Logo, Newsletter, SplitHeading, reduce, useRise } from './shared'
+import { CarouselDots, Count, Endorsers, Logo, Newsletter, SplitHeading, reduce, useCarousel, useRise } from './shared'
 import { about as a, consulting, featuredIn } from './data'
 
 gsap.registerPlugin(ScrollTrigger, SplitText, useGSAP)
@@ -108,6 +108,7 @@ function Phrase() {
 /* Pinned chapters that scroll sideways */
 function Chapters() {
   const ref = useRef(null)
+  const { track, current, onScroll, goTo } = useCarousel()
   useGSAP(
     () => {
       const mm = gsap.matchMedia()
@@ -129,12 +130,17 @@ function Chapters() {
         <p className="rs-label mb-4">The story so far</p>
         <h2 className="rs-display text-[clamp(2.4rem,5vw,4.6rem)] leading-[0.95]">Fifteen years, six chapters.</h2>
       </div>
-      <ol className="rs-ch-track flex flex-col gap-5 px-5 pb-20 md:px-8 lg:w-max lg:flex-row">
+      {/* Below desktop: a swipeable carousel of equal cards. Desktop: the pinned sideways scroll */}
+      <ol
+        ref={track}
+        onScroll={onScroll}
+        className="rs-ch-track relative flex snap-x snap-mandatory items-stretch gap-4 overflow-x-auto px-5 [scrollbar-width:none] md:px-8 lg:w-max lg:gap-5 lg:overflow-visible lg:pb-20 [&::-webkit-scrollbar]:hidden"
+      >
         {a.chapters.map((c, i) => (
-          <li key={c.title} className="flex shrink-0 flex-col overflow-hidden rounded-[14px] border border-white/10 bg-[#111] lg:h-[58vh] lg:w-[34vw] lg:min-w-[380px]">
-            <div className="relative h-[45%] min-h-[180px] overflow-hidden">
+          <li key={c.title} className="flex w-[84%] shrink-0 snap-center flex-col overflow-hidden rounded-[14px] border border-white/10 bg-[#111] sm:w-[60%] lg:h-[58vh] lg:w-[34vw] lg:min-w-[380px]">
+            <div className="relative h-[200px] shrink-0 overflow-hidden lg:h-[45%]">
               {c.img ? (
-                <Image src={`${IMG}${c.img}`} alt="" fill sizes="34vw" className="object-cover grayscale" />
+                <Image src={`${IMG}${c.img}`} alt="" fill sizes="(min-width: 1024px) 34vw, 84vw" className="object-cover grayscale" />
               ) : (
                 <div className="flex h-full items-center justify-center bg-[#0a0a0a] [perspective:900px]">
                   <div style={{ transform: 'scale(0.45) rotateY(-25deg)', transformStyle: 'preserve-3d' }}>
@@ -154,6 +160,7 @@ function Chapters() {
           </li>
         ))}
       </ol>
+      <CarouselDots count={a.chapters.length} current={current} goTo={goTo} noun="chapter" className="mb-20 mt-6 lg:hidden" />
     </section>
   )
 }
